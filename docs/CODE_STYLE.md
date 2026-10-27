@@ -53,9 +53,10 @@ How to read requirement keywords:
 
 | Artifact Type | Convention | Example |
 | :--- | :--- | :--- |
-| **Directories & Files** | `kebab-case` | `src/components/invoice-builder/line-items-editor.tsx` |
-| **Next.js App Router Files** | Framework standard (`page.tsx`, `layout.tsx`, `loading.tsx`, `error.tsx`, `route.ts`, `actions.ts`) | `src/app/(app)/invoices/[id]/page.tsx` |
-| **React Components** | `PascalCase` (named exports for shared components; default export only for Next.js `page.tsx`/`layout.tsx`) | `export function InvoiceLivePreview(...)` |
+| **Directories & Files** | `kebab-case` | `src/features/invoices/components/line-items-editor.tsx` |
+| **Next.js App Router Files** | Framework standard (`page.tsx`, `layout.tsx`, `loading.tsx`, `error.tsx`, `route.ts`) — **re-export only** | `src/app/(app)/invoices/[id]/page.tsx` |
+| **Feature Module Files** | `index.ts`, `page.tsx`, `metadata.ts`, `actions.ts`, `queries/<feature>-queries.ts`, `hooks/use-<feature>.ts`, `components/*.tsx`, `types/index.ts` | `src/features/invoices/hooks/use-invoice-builder.ts` |
+| **React Components** | `PascalCase` (named exports for feature/shared components; default re-export in `src/app/**/page.tsx`) | `export function InvoiceLivePreview(...)` |
 | **Functions & Variables** | `camelCase` | `calculateInvoiceTotals()`, `isPublicLinkEnabled` |
 | **Server Actions** | `camelCase` ending with `Action` | `saveInvoiceDraftAction`, `issueInvoiceAction` |
 | **Types & Interfaces** | `PascalCase` (no `I` prefix) | `InvoiceRenderProps`, `PaymentGatewayAdapter` |
@@ -64,15 +65,36 @@ How to read requirement keywords:
 
 ---
 
-## 4. Next.js App Router & React Conventions
+## 4. Next.js App Router & Feature Architecture Conventions (`app/` + `features/`)
 
-1. **Server Components by Default:**
+1. **`src/app/` Routing vs. `src/features/` Feature Ownership:**
+   - **No UI, hooks, queries, or business logic in `src/app/`:** Every route `src/app/**/page.tsx` **MUST** only re-export the page component and metadata from `src/features/<feature>`:
+     ```tsx
+     import { DashboardPage, dashboardMetadata } from '@/features/dashboard';
+
+     export const metadata = dashboardMetadata;
+
+     export default DashboardPage;
+     ```
+   - **Feature Folder Layout (`src/features/<feature>/`):**
+     - `index.ts` — barrel exporting `<Feature>Page`, `<feature>Metadata`, and public actions/types
+     - `page.tsx` — page-level Server Component (layout & data orchestration)
+     - `metadata.ts` — Next.js `Metadata` or `generateMetadata`
+     - `actions.ts` — Next.js Server Actions (`'use server'`) for the feature
+     - `queries/<feature>-queries.ts` — data-fetching / query definitions
+     - `hooks/use-<feature>.ts` — client composition hooks & local UI state
+     - `components/` — UI components private to the feature
+     - `config/` — static per-feature configuration
+     - `types/index.ts` — feature-scoped TypeScript interfaces
+   - **Sub-Features:** Nested routes (e.g., `/invoices/new`, `/invoices/[id]`, `/settings/billing`) nest one level under their parent feature (`src/features/invoices/new/`, `src/features/invoices/detail/`, `src/features/settings/billing/`) and share the parent's `actions.ts`, `queries/`, `hooks/`, and `components/`.
+   - **Shared `src/components/`:** Reserved strictly for cross-feature primitives (`src/components/ui/`), app-shell layouts (`src/components/layout/`), and shared invoice templates (`src/components/invoice-templates/`).
+2. **Server Components by Default:**
    - Every component is a React Server Component unless it requires browser interactivity (`useState`, `useEffect`, event handlers, `react-hook-form`).
-   - Add `'use client'` at the **lowest possible leaf component** (for example `InvoiceEditorClient`), keeping page shells and initial data fetches on the server.
-2. **Data Fetching & Mutations:**
-   - Read queries in `(app)` pages run directly in Server Components using the server Supabase client (`createServerSupabaseClient()`).
-   - Authenticated mutations use Next.js Server Actions (`'use server'`) that validate inputs with `Zod`, verify entitlements via `EntitlementService`, mutate via Supabase, and call `revalidatePath()`.
-3. **Environment Variable Safety (`SECURITY.md` Section 8.2):**
+   - Add `'use client'` at the **lowest possible leaf component** inside `src/features/<feature>/components/`, keeping `src/features/<feature>/page.tsx` on the server.
+3. **Data Fetching & Mutations:**
+   - Read queries in `(app)` pages run via `src/features/<feature>/queries/<feature>-queries.ts` called from the Server Component `page.tsx` using the server Supabase client (`createClient()`).
+   - Authenticated mutations use Next.js Server Actions (`'use server'`) in `src/features/<feature>/actions.ts` that validate inputs with `Zod`, verify entitlements via `EntitlementService`, mutate via Supabase, and call `revalidatePath()`.
+4. **Environment Variable Safety (`SECURITY.md` Section 8.2):**
    - Server-only secrets (`SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `PAYMENT_GATEWAY_SECRET_KEY`, `CRON_SECRET`) are accessed through a server-only helper (`import 'server-only'`) so bundling them into a Client Component fails at build time.
 
 ---

@@ -83,7 +83,12 @@ flowchart TB
 
 ---
 
-## 3. Repository & Directory Structure
+## 3. Repository & Directory Structure (`app/` + `features/` Split)
+
+Tagiva uses a strict **`src/app/` + `src/features/`** module architecture (modeled after `rabbit-customer-web`):
+- **`src/app/` is for routing only:** Every route `page.tsx` is a thin re-export of its corresponding feature module (`export { <Feature>Page as default, <feature>Metadata as metadata } from '@/features/<feature>'`). No feature UI, business logic, or hooks live inside `src/app/`.
+- **`src/features/<feature>/` owns everything for that feature:** `page.tsx`, `metadata.ts`, `actions.ts`, `queries/`, `hooks/`, `components/`, `config/`, `types/`, and `index.ts`.
+- **`src/components/` holds only cross-feature shared UI:** `ui/` (shadcn primitives), `layout/` (app shell, headers, banners), and `invoice-templates/` (shared A4 Web Preview & PDF renderer used across Builder, Public Link, PDF API, and Landing page).
 
 ```text
 /
@@ -97,29 +102,42 @@ flowchart TB
 ├── supabase/
 │   └── migrations/                 # Versioned SQL migrations, RLS policies, and RPC functions
 ├── src/
-│   ├── app/
+│   ├── app/                        # ROUTING LAYER ONLY (thin re-exports from src/features/*)
 │   │   ├── (marketing)/            # Public pages: /, /pricing, /terms, /privacy
-│   │   ├── (auth)/                 # /login, /auth/callback (Google OAuth code exchange)
+│   │   ├── (auth)/                 # /login (re-exports features/auth), /auth/callback (OAuth route)
 │   │   ├── (app)/                  # Protected routes (requires Google session)
-│   │   │   ├── onboarding/         # /onboarding (1-step Business Setup, D-38)
-│   │   │   ├── dashboard/          # /dashboard
+│   │   │   ├── onboarding/         # /onboarding -> re-exports features/onboarding
+│   │   │   ├── dashboard/          # /dashboard -> re-exports features/dashboard
 │   │   │   ├── invoices/
-│   │   │   │   ├── new/            # /invoices/new
-│   │   │   │   └── [id]/           # /invoices/[id]
-│   │   │   ├── clients/            # /clients
-│   │   │   └── settings/           # /settings, /settings/billing
+│   │   │   │   ├── new/            # /invoices/new -> re-exports features/invoices/new
+│   │   │   │   └── [id]/           # /invoices/[id] -> re-exports features/invoices/detail
+│   │   │   ├── clients/            # /clients -> re-exports features/clients
+│   │   │   └── settings/           # /settings & /settings/billing -> re-exports features/settings
 │   │   ├── (public-invoice)/
-│   │   │   └── i/[token]/          # Public read-only client view (D-40, D-43)
+│   │   │   └── i/[token]/          # /i/[token] -> re-exports features/public-invoice
 │   │   └── api/
 │   │       ├── invoices/[id]/pdf/  # GET: authenticated PDF download
 │   │       ├── public/i/[token]/pdf/ # GET: public client PDF download
 │   │       ├── webhooks/billing/   # POST: payment gateway webhook receiver
 │   │       └── cron/daily/         # GET: Vercel Cron (reminders & subscription expiry)
-│   ├── components/
+│   ├── features/                   # FEATURE MODULES (page, metadata, actions, queries, hooks, components, types)
+│   │   ├── auth/                   # Login page, Google OAuth actions, useGoogleSignIn hook, GoogleSignInButton
+│   │   ├── onboarding/             # 1-Step Business Setup page, form component, hooks
+│   │   ├── dashboard/              # Invoices dashboard page, queries, filter hooks, summary cards, list table
+│   │   ├── invoices/               # Shared invoice builder components, hooks, queries, & Server Actions
+│   │   │   ├── new/                # /invoices/new page & metadata
+│   │   │   └── detail/             # /invoices/[id] page & metadata
+│   │   ├── public-invoice/         # /i/[token] public read-only client view, queries, components
+│   │   ├── clients/                # /clients directory page, actions, queries, hooks, components
+│   │   ├── settings/               # /settings business profile & logo actions, queries, hooks, components
+│   │   │   └── billing/            # /settings/billing page, checkout actions, UpgradeProModal
+│   │   ├── landing/                # / marketing landing page & hero preview components
+│   │   ├── pricing/                # /pricing page, plan comparison cards & FAQ
+│   │   └── legal/                  # /terms & /privacy pages and content config
+│   ├── components/                 # SHARED UI ONLY (used across multiple features)
 │   │   ├── ui/                     # shadcn/ui primitives (D-37)
-│   │   ├── layout/                 # Header, Sidebar, LanguageSwitcher, FreeSlotCounter, ExpiryBanner
-│   │   ├── invoice-builder/        # Form editor, LineItemsEditor, TaxDiscountControls
-│   │   └── invoice-templates/      # Modular templates (D-03)
+│   │   ├── layout/                 # TagivaLogo, AppHeader, AppSidebar, FreeSlotCounter, SubscriptionBanners
+│   │   └── invoice-templates/      # Modular templates shared by builder, public view, PDF API, & landing (D-03)
 │   │       └── modern-minimalist/
 │   │           ├── web-preview.tsx # On-screen HTML/Tailwind A4 component
 │   │           └── pdf-document.tsx# Matching @react-pdf/renderer A4 component
@@ -128,6 +146,7 @@ flowchart TB
 │   │   │   ├── entitlements.ts     # Plan & role permission checks (Free, Pro, Lapsed)
 │   │   │   ├── calculations.ts     # Exact integer/decimal invoice math (NFR-4)
 │   │   │   ├── numbering.ts        # Prefix validation & INV-PREFIX-YYYY-MM-XXXX formatting
+│   │   │   ├── timezone.ts         # Asia/Jakarta (WIB) date helpers (NFR-5)
 │   │   │   └── status.ts           # Status transitions & WIB overdue evaluation
 │   │   ├── billing/
 │   │   │   ├── adapter.ts          # PaymentGatewayAdapter interface (D-48)
@@ -139,12 +158,14 @@ flowchart TB
 │   │   ├── i18n/
 │   │   │   ├── ui-dictionary.ts    # App UI translations (EN / ID, D-47)
 │   │   │   └── invoice-dictionary.ts # Invoice document translations (EN / ID, D-17)
+│   │   ├── security/               # Redirect sanitizer, route matchers, & magic-byte file validator
+│   │   ├── validations/            # Shared Zod schemas (profile, invoice, billing)
 │   │   └── supabase/
 │   │       ├── client.ts           # Browser Supabase client
 │   │       ├── server.ts           # Server Component / Server Action Supabase client
 │   │       └── admin.ts            # Service-role client (ONLY for webhooks, cron, and public token lookup)
 │   └── types/
-│       └── database.ts             # Generated Supabase TypeScript definitions
+│       └── database.ts             # Supabase TypeScript definitions
 └── vercel.json                     # Vercel Cron schedule configuration
 ```
 

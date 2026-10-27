@@ -98,10 +98,10 @@ This document breaks the entire **Tagiva** MVP into **15 self-contained, sequent
 ---
 
 ### [x] `T-05` — Supabase Clients, Google OAuth Flow (`/login`, `/auth/callback`) & Route Protection Middleware
-- **Objective:** Wire up browser, server, and service-role Supabase clients, enforce the Visitor authentication gate via Next.js Middleware, and build the Google Sign-In flow.
+- **Objective:** Wire up browser, server, and service-role Supabase clients, enforce the Visitor authentication gate via Next.js Middleware, and build the Google Sign-In flow inside `src/features/auth/`.
 - **Specification References:**
   - `PRD.md`: `D-14`, `D-24`, `D-31`, `D-38`, `D-60`
-  - `ARCHITECTURE.md`: Section 4.1
+  - `ARCHITECTURE.md`: Section 3 & Section 4.1
   - `SECURITY.md`: Section 2 (`SEC-AUTH-1`–`SEC-AUTH-4`), Section 3 (`Service-Role Key Restriction`)
   - `UX_FLOWS.md`: Section 3.1 (Flow 1)
 - **Deliverables / Files:**
@@ -109,9 +109,9 @@ This document breaks the entire **Tagiva** MVP into **15 self-contained, sequent
   - `src/lib/supabase/server.ts` (cookie-based server client + `getAuthenticatedUser()` helper using `supabase.auth.getUser()`, `SEC-AUTH-3`)
   - `src/lib/supabase/admin.ts` (guarded by `import 'server-only'`)
   - `src/middleware.ts` (session refresh + unauthenticated redirect to `/login` for `/onboarding`, `/dashboard`, `/invoices/*`, `/clients`, `/settings/*`)
-  - `src/app/(auth)/login/page.tsx` (Tagiva `48×48px` logo `D-60`, "Continue with Google" button `D-14`, Terms/Privacy links)
+  - `src/features/auth/` (`page.tsx`, `metadata.ts`, `actions.ts`, `hooks/use-google-sign-in.ts`, `components/google-sign-in-button.tsx`, `index.ts`)
+  - `src/app/(auth)/login/page.tsx` (thin routing re-export of `LoginPage` & `loginMetadata` from `@/features/auth`)
   - `src/app/(auth)/auth/callback/route.ts` (PKCE code exchange, open-redirect check `SEC-AUTH-4`, redirects first-time users with `onboarding_completed = false` to `/onboarding` and returning users to `/dashboard`)
-  - `src/app/(auth)/actions.ts` (`signInWithGoogleAction`, `signOutAction`)
 - **Verification Criteria:**
   - Unit tests for open-redirect sanitizer and middleware route-matching rules pass; `npm run typecheck` and `npm run lint` pass.
 
@@ -120,7 +120,7 @@ This document breaks the entire **Tagiva** MVP into **15 self-contained, sequent
 ## Phase 3: Onboarding, Authenticated App Shell & Business Settings
 
 ### [ ] `T-06` — 1-Step Business Onboarding (`/onboarding`) & Profile/Logo Server Actions
-- **Objective:** Build the post-signup 1-Step Business Setup screen (`D-38`) and the profile & Pro logo upload Server Actions (including server-side magic-byte inspection).
+- **Objective:** Build the post-signup 1-Step Business Setup screen (`D-38`) in `src/features/onboarding/` and the profile & Pro logo upload Server Actions in `src/features/settings/actions.ts` (including server-side magic-byte inspection).
 - **Specification References:**
   - `PRD.md`: `D-04`, `D-11`, `D-13`, `D-25`, `D-32`, `D-38`, `D-39`, `D-54`, `A-06`
   - `UX_FLOWS.md`: Section 3.1 (`/onboarding` fields & `"Skip for now"` action)
@@ -128,15 +128,16 @@ This document breaks the entire **Tagiva** MVP into **15 self-contained, sequent
   - `SECURITY.md`: Section 5 (PNG/JPG/WEBP magic-byte verification, 2 MB limit, SVG rejection)
 - **Deliverables / Files:**
   - `src/lib/security/file-validation.ts` (PNG, JPEG, WEBP magic-byte inspector + unit tests `TC-SEC-02`)
-  - `src/app/(app)/settings/actions.ts` (`updateBusinessProfileAction`, `uploadBusinessLogoAction`, `removeBusinessLogoAction`, `skipOnboardingAction`)
-  - `src/app/(app)/onboarding/page.tsx` & `src/components/onboarding/onboarding-form.tsx` (with live prefix preview `INV-TAT-2026-10-0001`, currency selector default `IDR`, default invoice language toggle `EN | ID`, bank details, and `"Skip for now"`)
+  - `src/features/settings/actions.ts` (`updateBusinessProfileAction`, `uploadBusinessLogoAction`, `removeBusinessLogoAction`, `skipOnboardingAction`)
+  - `src/features/onboarding/` (`page.tsx`, `metadata.ts`, `index.ts`, `hooks/use-onboarding-form.ts`, `components/onboarding-form.tsx` with live prefix preview `INV-TAT-2026-10-0001`, currency selector default `IDR`, default invoice language toggle `EN | ID`, bank details, and `"Skip for now"`)
+  - `src/app/(app)/onboarding/page.tsx` (thin re-export of `OnboardingPage` & `onboardingMetadata` from `@/features/onboarding`)
 - **Verification Criteria:**
   - `TC-SEC-02` (magic-byte validation rejecting SVG/spoofed files) and profile action tests pass (`npm run test`).
 
 ---
 
 ### [ ] `T-07` — Authenticated App Shell, Plan Indicators, `/settings` & `/clients` Directory
-- **Objective:** Build the authenticated `(app)` layout shell with navigation, UI language switcher (`EN | ID`), Free Tier Slot Counter (`X / 3`), Subscription Expiry Banner (`30d/14d/3d/0d`), Lapsed Read-Only Banner, Business Settings page, and Clients Directory page.
+- **Objective:** Build the authenticated `(app)` layout shell with navigation, UI language switcher (`EN | ID`), Free Tier Slot Counter (`X / 3`), Subscription Expiry Banner (`30d/14d/3d/0d`), Lapsed Read-Only Banner, Business Settings feature (`src/features/settings/`), and Clients Directory feature (`src/features/clients/`).
 - **Specification References:**
   - `PRD.md`: `D-04`, `D-12`, `D-23`, `D-25`, `D-26`, `D-28`, `D-32`, `D-39`, `D-47`, `D-58`, `D-60`, `FR-4.3`–`FR-4.5`, `FR-5.11`
   - `DESIGN_SYSTEM.md`: Section 3.4 (Tagiva header lockup), Section 6.2 (Plan & Entitlement Visual Indicators)
@@ -146,8 +147,10 @@ This document breaks the entire **Tagiva** MVP into **15 self-contained, sequent
   - `src/components/layout/app-sidebar.tsx` & `src/components/layout/app-header.tsx` (includes `EN | ID` UI language switcher and Default Invoice Language quick toggle `D-25`)
   - `src/components/layout/free-slot-counter.tsx` (`1 / 3 Free slots` progress bar + Upgrade CTA)
   - `src/components/layout/subscription-banners.tsx` (Expiry reminder banner `D-26` + Lapsed read-only banner `D-28`)
-  - `src/app/(app)/settings/page.tsx` (Business profile editor, Pro Logo uploader with `PRO` badge lock for Free/Lapsed, and UU PDP manual account deletion instructions via `support@tagiva.com`, `D-58`)
-  - `src/app/(app)/clients/page.tsx` & `src/app/(app)/clients/actions.ts` (Create, edit, delete, and list saved clients)
+  - `src/features/settings/` (`page.tsx`, `metadata.ts`, `index.ts`, `queries/settings-queries.ts`, `hooks/use-settings-form.ts`, `components/business-profile-form.tsx`, `components/logo-uploader.tsx` with `PRO` badge lock for Free/Lapsed, and UU PDP manual account deletion instructions via `support@tagiva.com`, `D-58`)
+  - `src/app/(app)/settings/page.tsx` (thin re-export from `@/features/settings`)
+  - `src/features/clients/` (`page.tsx`, `metadata.ts`, `index.ts`, `actions.ts`, `queries/client-queries.ts`, `hooks/use-clients.ts`, `components/clients-list.tsx`, `components/client-form-dialog.tsx`)
+  - `src/app/(app)/clients/page.tsx` (thin re-export from `@/features/clients`)
 - **Verification Criteria:**
   - `npm run typecheck`, `npm run lint`, and `npm run test` pass.
 
@@ -175,34 +178,36 @@ This document breaks the entire **Tagiva** MVP into **15 self-contained, sequent
 ---
 
 ### [ ] `T-09` — Interactive Invoice Builder (`/invoices/new`, `/invoices/[id]`) & Invoice Lifecycle Server Actions
-- **Objective:** Implement the core invoice Server Actions (`saveInvoiceDraftAction`, `issueInvoiceAction`, `updateInvoiceStatusAction`, `deleteInvoiceAction`, `duplicateInvoiceAction`) and the responsive split-screen/tabbed Invoice Builder UI.
+- **Objective:** Implement the core invoice feature (`src/features/invoices/`): Server Actions (`saveInvoiceDraftAction`, `issueInvoiceAction`, `updateInvoiceStatusAction`, `deleteInvoiceAction`, `duplicateInvoiceAction`), queries, hooks, and the responsive split-screen/tabbed Invoice Builder UI.
 - **Specification References:**
   - `PRD.md`: `D-12`, `D-13`, `D-15`, `D-17`, `D-18`, `D-21`, `D-23`, `D-25`, `D-27`–`D-30`, `D-32`, `D-33`, `D-44`–`D-46`, `D-55`, `D-56`, `FR-1`, `FR-2`, `FR-5`
   - `DESIGN_SYSTEM.md`: Section 5.2 (Desktop 50/50 split vs. Mobile `Edit Form | Live Preview` segmented toggle)
   - `UX_FLOWS.md`: Sections 3.2 & 3.3 (Action Permission Matrix by Role & Status, Free `Sent` confirmation popover `UX-A03`)
   - `API.md`: Section 3.2
 - **Deliverables / Files:**
-  - `src/app/(app)/invoices/actions.ts` (`saveInvoiceDraftAction`, `issueInvoiceAction`, `updateInvoiceStatusAction`, `deleteInvoiceAction`, `duplicateInvoiceAction`)
-  - `src/components/invoice-builder/invoice-builder.tsx` (responsive split-view + mobile tab toggle, sessionStorage draft restoration from landing page `A-22`, saved client picker `FR-5.11`, `"Use PPN 11%"` chip `D-44`, `% | Fixed` discount toggle `D-45`, currency & language selectors)
-  - `src/components/invoice-builder/invoice-action-bar.tsx` (Save Draft, Issue / Mark as Sent with `UX-A03` warning on Free, Download PDF, Mark as Paid, Delete, and Pro-badged Share Link / Send Email triggers)
-  - `src/app/(app)/invoices/new/page.tsx` (checks 3-invoice cap for Free/Lapsed `D-12`/`D-33`)
-  - `src/app/(app)/invoices/[id]/page.tsx` (loads invoice; enforces Lapsed read-only mode where all inputs are disabled except `"Mark as Paid"` on `Sent`/`Overdue` invoices, `D-28`)
-  - `src/app/(app)/invoices/__tests__/actions.test.ts` (`TC-NUM-08`, `TC-ENT-02`–`09`, `TC-SEC-01`)
+  - `src/features/invoices/actions.ts` (`saveInvoiceDraftAction`, `issueInvoiceAction`, `updateInvoiceStatusAction`, `deleteInvoiceAction`, `duplicateInvoiceAction`)
+  - `src/features/invoices/queries/invoice-queries.ts` & `src/features/invoices/hooks/use-invoice-builder.ts`
+  - `src/features/invoices/components/invoice-builder.tsx` (responsive split-view + mobile tab toggle, sessionStorage draft restoration from landing page `A-22`, saved client picker `FR-5.11`, `"Use PPN 11%"` chip `D-44`, `% | Fixed` discount toggle `D-45`, currency & language selectors)
+  - `src/features/invoices/components/invoice-action-bar.tsx` (Save Draft, Issue / Mark as Sent with `UX-A03` warning on Free, Download PDF, Mark as Paid, Delete, and Pro-badged Share Link / Send Email triggers)
+  - `src/features/invoices/new/` (`page.tsx`, `metadata.ts`, `index.ts` — checks 3-invoice cap for Free/Lapsed `D-12`/`D-33`) & `src/app/(app)/invoices/new/page.tsx` (thin re-export)
+  - `src/features/invoices/detail/` (`page.tsx`, `metadata.ts`, `index.ts` — loads invoice; enforces Lapsed read-only mode where all inputs are disabled except `"Mark as Paid"` on `Sent`/`Overdue` invoices, `D-28`) & `src/app/(app)/invoices/[id]/page.tsx` (thin re-export)
+  - `src/features/invoices/__tests__/actions.test.ts` (`TC-NUM-08`, `TC-ENT-02`–`09`, `TC-SEC-01`)
 - **Verification Criteria:**
   - All invoice lifecycle action tests pass (`npm run test`); `npm run typecheck` and `npm run lint` pass.
 
 ---
 
 ### [ ] `T-10` — Invoices Dashboard (`/dashboard`)
-- **Objective:** Build the main Invoices Dashboard showing summary cards, status filter tabs (`All`, `Draft`, `Sent`, `Paid`, `Overdue`), client/number search, invoice table with role-aware row actions, and empty state.
+- **Objective:** Build the main Invoices Dashboard inside `src/features/dashboard/` showing summary cards, status filter tabs (`All`, `Draft`, `Sent`, `Paid`, `Overdue`), client/number search, invoice table with role-aware row actions, and empty state.
 - **Specification References:**
   - `PRD.md`: `D-12`, `D-15`, `D-21`, `D-28`–`D-30`, `D-33`, `FR-5.1`–`FR-5.12`
   - `DESIGN_SYSTEM.md`: Section 3.3 (Status Badges), Section 6.2 (Plan Indicators)
   - `UX_FLOWS.md`: Section 2 (`/dashboard`), Section 3.3 (Permission Matrix), Section 4 (Empty States)
 - **Deliverables / Files:**
-  - `src/app/(app)/dashboard/page.tsx`
-  - `src/components/dashboard/invoice-summary-cards.tsx` (Total Paid, Total Outstanding, Overdue Count)
-  - `src/components/dashboard/invoice-list-table.tsx` (status badges, `[DRAFT]` indicator, search & status filter, row dropdown with role-aware disabled states & tooltips for Free non-draft delete `D-29` and Lapsed read-only `D-28`)
+  - `src/features/dashboard/` (`page.tsx`, `metadata.ts`, `index.ts`, `queries/dashboard-queries.ts`, `hooks/use-dashboard-filters.ts`, `types/index.ts`)
+  - `src/features/dashboard/components/invoice-summary-cards.tsx` (Total Paid, Total Outstanding, Overdue Count)
+  - `src/features/dashboard/components/invoice-list-table.tsx` (status badges, `[DRAFT]` indicator, search & status filter, row dropdown with role-aware disabled states & tooltips for Free non-draft delete `D-29` and Lapsed read-only `D-28`)
+  - `src/app/(app)/dashboard/page.tsx` (thin re-export from `@/features/dashboard`)
 - **Verification Criteria:**
   - `npm run typecheck`, `npm run lint`, and `npm run test` pass.
 
@@ -211,17 +216,17 @@ This document breaks the entire **Tagiva** MVP into **15 self-contained, sequent
 ## Phase 5: Pro Delivery Channels (Public Shareable Link & Resend Email)
 
 ### [ ] `T-11` — Public Shareable Invoice Link (`/i/[token]`) & Link Management Modal
-- **Objective:** Implement the Pro-only public link generator/revoker (`createOrTogglePublicLinkAction`) and the public client-facing invoice page (`/i/[token]`).
+- **Objective:** Implement the Pro-only public link generator/revoker (`createOrTogglePublicLinkAction`) and the public client-facing invoice feature (`src/features/public-invoice/`).
 - **Specification References:**
   - `PRD.md`: `D-11`, `D-17`, `D-40`, `D-41`, `D-43`, `FR-8.1`–`FR-8.4`
   - `UX_FLOWS.md`: Section 3.4A (Share Link Modal & Client Experience on `/i/[token]`), Section 4 (Invalid/Revoked Token 404 Card)
   - `API.md`: Section 3.3 (`createOrTogglePublicLinkAction`)
   - `SECURITY.md`: Section 4 (`SEC-PUB-1` 144-bit token entropy, `SEC-PUB-2` scoped RPC lookup, `SEC-PUB-3` `noindex, nofollow`, `SEC-PUB-4` instant revocation)
 - **Deliverables / Files:**
-  - `src/app/(app)/invoices/share-actions.ts` (`createOrTogglePublicLinkAction`)
-  - `src/components/invoice-builder/share-link-modal.tsx` (Copy link, Open in new tab, Revoke link toggle)
-  - `src/app/(public-invoice)/i/[token]/page.tsx` (`robots: { index: false, follow: false }`, client status badge `Unpaid / Paid / Overdue` `D-43`, Download PDF button, 1-click Copy Bank Account button, renders `WebPreview` with platform footer added if sender is Lapsed `D-40`)
-  - `src/app/(public-invoice)/i/[token]/not-found.tsx` (clean revoked/invalid link card)
+  - `src/features/invoices/share-actions.ts` (`createOrTogglePublicLinkAction`)
+  - `src/features/invoices/components/share-link-modal.tsx` (Copy link, Open in new tab, Revoke link toggle)
+  - `src/features/public-invoice/` (`page.tsx`, `not-found-page.tsx`, `metadata.ts`, `index.ts`, `queries/public-invoice-queries.ts`, `components/public-invoice-toolbar.tsx` with client status badge `Unpaid / Paid / Overdue` `D-43`, Download PDF button, 1-click Copy Bank Account button, and `WebPreview` with platform footer added if sender is Lapsed `D-40`)
+  - `src/app/(public-invoice)/i/[token]/page.tsx` & `src/app/(public-invoice)/i/[token]/not-found.tsx` (thin re-exports from `@/features/public-invoice`)
 - **Verification Criteria:**
   - Integration tests verifying `Draft` auto-issuance on link creation (`FR-8.1`), `PRO_REQUIRED` check for Free/Lapsed users, revocation (`404`), and Lapsed footer behavior (`TC-ENT-10`) pass.
 
@@ -237,9 +242,9 @@ This document breaks the entire **Tagiva** MVP into **15 self-contained, sequent
 - **Deliverables / Files:**
   - `src/lib/email/client.ts` (Resend wrapper with graceful mock fallback in test/dev)
   - `src/lib/email/templates/invoice-email.tsx` (Bilingual EN/ID email template with invoice summary, public link CTA, and sender details)
-  - `src/app/(app)/invoices/email-actions.ts` (`sendInvoiceEmailAction` enforcing `D-57` against `invoice_email_logs`, auto-issuing `Draft`, generating PDF buffer, and sending via `invoices@tagiva.com` with `Reply-To` user email `D-51`)
-  - `src/components/invoice-builder/send-email-modal.tsx`
-  - `src/app/(app)/invoices/__tests__/email-actions.test.ts` (`TC-SEC-03` verifying 50/day/account and 5/day/invoice rate limits)
+  - `src/features/invoices/email-actions.ts` (`sendInvoiceEmailAction` enforcing `D-57` against `invoice_email_logs`, auto-issuing `Draft`, generating PDF buffer, and sending via `invoices@tagiva.com` with `Reply-To` user email `D-51`)
+  - `src/features/invoices/components/send-email-modal.tsx`
+  - `src/features/invoices/__tests__/email-actions.test.ts` (`TC-SEC-03` verifying 50/day/account and 5/day/invoice rate limits)
 - **Verification Criteria:**
   - `TC-SEC-03` and email dispatch tests pass (`npm run test`).
 
@@ -248,7 +253,7 @@ This document breaks the entire **Tagiva** MVP into **15 self-contained, sequent
 ## Phase 6: Indonesian Payment Gateway Billing, Cron Jobs & Public Marketing Pages
 
 ### [ ] `T-13` — Indonesian Payment Gateway Adapter, Pro Upgrade Checkout, Webhook & `/settings/billing`
-- **Objective:** Implement the `PaymentGatewayAdapter` (`D-48`) supporting `1m (Rp29k)`, `3m (Rp79k)`, `6m (Rp150k)`, and `12m (Rp250k)` in both `manual` and `auto_renew` modes, the signed webhook handler (`POST /api/webhooks/billing`), the Upgrade Modal, and `/settings/billing`.
+- **Objective:** Implement the `PaymentGatewayAdapter` (`D-48`) supporting `1m (Rp29k)`, `3m (Rp79k)`, `6m (Rp150k)`, and `12m (Rp250k)` in both `manual` and `auto_renew` modes, the signed webhook handler (`POST /api/webhooks/billing`), and `src/features/settings/billing/`.
 - **Specification References:**
   - `PRD.md`: `D-10`, `D-16`, `D-22`, `D-23`, `D-48`, `D-52`, `A-14`, `FR-10.1`–`FR-10.9`
   - `ARCHITECTURE.md`: Section 4.6 (`PaymentGatewayAdapter` contract)
@@ -257,9 +262,9 @@ This document breaks the entire **Tagiva** MVP into **15 self-contained, sequent
 - **Deliverables / Files:**
   - `src/lib/billing/adapter.ts` (`PaymentGatewayAdapter` interface & canonical pricing map `D-16`)
   - `src/lib/billing/xendit-adapter.ts` & `src/lib/billing/midtrans-adapter.ts` (configurable via `PAYMENT_GATEWAY_PROVIDER`)
-  - `src/app/(app)/settings/billing/actions.ts` (`createSubscriptionCheckoutAction`, `cancelAutoRenewAction`)
+  - `src/features/settings/billing/` (`page.tsx`, `metadata.ts`, `index.ts`, `actions.ts` with `createSubscriptionCheckoutAction` & `cancelAutoRenewAction`, `queries/billing-queries.ts`, `hooks/use-billing-checkout.ts`, `components/upgrade-pro-modal.tsx`)
+  - `src/app/(app)/settings/billing/page.tsx` (thin re-export from `@/features/settings/billing`)
   - `src/app/api/webhooks/billing/route.ts` (signature check, idempotency check, period extension `A-14`, and 3-day `past_due` grace window `D-52`)
-  - `src/components/billing/upgrade-pro-modal.tsx` & `src/app/(app)/settings/billing/page.tsx`
   - `src/lib/billing/__tests__/webhook.test.ts` (`TC-BILL-01`–`03`)
 - **Verification Criteria:**
   - `TC-BILL-01`, `TC-BILL-02`, and `TC-BILL-03` pass (`npm run test`).
@@ -284,16 +289,16 @@ This document breaks the entire **Tagiva** MVP into **15 self-contained, sequent
 ---
 
 ### [ ] `T-15` — Marketing Landing Page (`/`), Pricing Page (`/pricing`), Legal Pages & E2E Test Suite
-- **Objective:** Build the public marketing pages (`/`, `/pricing`, `/terms`, `/privacy`) with the Visitor sign-in gate (`D-24`, `D-31`) and run the complete Playwright E2E and Vitest quality gates.
+- **Objective:** Build the public marketing features (`src/features/landing/`, `src/features/pricing/`, `src/features/legal/`) with the Visitor sign-in gate (`D-24`, `D-31`) and run the complete Playwright E2E and Vitest quality gates.
 - **Specification References:**
   - `PRD.md`: `D-09`, `D-14`, `D-16`, `D-24`, `D-31`, `D-58`–`D-60`, `A-22`
   - `UX_FLOWS.md`: Section 2 (`/`, `/pricing`), Section 3.1 (Flow 1 Visitor Gate)
   - `TESTING.md`: Section 2 (Layer 4 Playwright E2E tests)
 - **Deliverables / Files:**
-  - `src/app/(marketing)/layout.tsx` (Public header with Tagiva logo `D-60`, `EN | ID` switcher, Pricing link, and "Sign in with Google" CTA)
-  - `src/app/(marketing)/page.tsx` (Hero section, static interactive-looking sample of the "Modern Minimalist" invoice, feature highlights, and "Create / Preview Invoice" CTA that gates on Google Sign-In `D-31`)
-  - `src/app/(marketing)/pricing/page.tsx` (Free vs. Pro `1m / 3m / 6m / 12m` pricing cards `D-16` and FAQ)
-  - `src/app/(marketing)/terms/page.tsx` & `src/app/(marketing)/privacy/page.tsx` (UU PDP privacy disclosures & manual account deletion instructions via `support@tagiva.com`, `D-58`)
+  - `src/app/(marketing)/layout.tsx` & `src/components/layout/marketing-header.tsx` (Public header with Tagiva logo `D-60`, `EN | ID` switcher, Pricing link, and "Sign in with Google" CTA)
+  - `src/features/landing/` (`page.tsx`, `metadata.ts`, `index.ts`, `components/` — Hero section, static interactive-looking sample of the "Modern Minimalist" invoice, feature highlights, and "Create / Preview Invoice" CTA that gates on Google Sign-In `D-31`) & `src/app/(marketing)/page.tsx` (thin re-export)
+  - `src/features/pricing/` (`page.tsx`, `metadata.ts`, `index.ts`, `components/` — Free vs. Pro `1m / 3m / 6m / 12m` pricing cards `D-16` and FAQ) & `src/app/(marketing)/pricing/page.tsx` (thin re-export)
+  - `src/features/legal/` (`terms/`, `privacy/`, `config/` — UU PDP privacy disclosures & manual account deletion instructions via `support@tagiva.com`, `D-58`) & `src/app/(marketing)/terms/page.tsx` + `src/app/(marketing)/privacy/page.tsx` (thin re-exports)
   - `playwright.config.ts` & `e2e/tagiva-flows.spec.ts` (Visitor gate `TC-ENT-01`, Desktop & Mobile responsive checks `NFR-1`, Public invoice page rendering)
 - **Verification Criteria:**
   - `npm run typecheck`, `npm run lint`, `npm run test`, and `npm run build` all succeed with 0 errors.

@@ -6,9 +6,8 @@
  * Initiates Google OAuth 2.0 PKCE flow (D-14, SEC-AUTH-1).
  */
 
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { signInWithGoogleAction } from '@/app/(auth)/actions';
+import { useGoogleSignIn } from '../hooks/use-google-sign-in';
 
 interface GoogleSignInButtonProps {
   nextPath?: string;
@@ -16,29 +15,7 @@ interface GoogleSignInButtonProps {
 }
 
 export function GoogleSignInButton({ nextPath, className }: GoogleSignInButtonProps) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  async function handleSignIn() {
-    try {
-      setIsLoading(true);
-      setErrorMessage(null);
-
-      const result = await signInWithGoogleAction(nextPath);
-
-      if (!result.ok) {
-        setErrorMessage(result.error.message);
-        setIsLoading(false);
-        return;
-      }
-
-      // Redirect user to Google OAuth endpoint
-      window.location.href = result.data.url;
-    } catch {
-      setErrorMessage('Failed to connect to authentication server. Please try again.');
-      setIsLoading(false);
-    }
-  }
+  const { isLoading, errorMessage, handleSignIn } = useGoogleSignIn(nextPath);
 
   return (
     <div className="w-full space-y-3">
@@ -72,9 +49,7 @@ export function GoogleSignInButton({ nextPath, className }: GoogleSignInButtonPr
       </Button>
 
       {errorMessage && (
-        <p className="text-xs text-rose-600 text-center font-medium">
-          {errorMessage}
-        </p>
+        <p className="text-xs text-rose-600 text-center font-medium">{errorMessage}</p>
       )}
     </div>
   );

@@ -89,6 +89,9 @@ Agents **MUST NEVER** violate any of the following confirmed decisions:
 5. **Feature Task Tracking Convention (`docs/[feature-name]/task.md`):**
    - Every feature's task breakdown and execution checklist **MUST** be stored at `docs/[feature-name]/task.md` (for the core MVP: [`docs/tagiva/task.md`](file:///Users/tatasfachrul/Project/Personal/invoice/docs/tagiva/task.md)).
    - Execute tasks one by one as requested by the user, and mark each task `[x]` in `docs/[feature-name]/task.md` once its verification criteria pass.
+6. **Feature-First Directory Architecture (`src/features/` + `src/app/`):**
+   - Every feature's `page.tsx`, `metadata.ts`, `actions.ts`, `queries/`, `hooks/`, `components/`, `config/`, and `types/` **MUST** live inside `src/features/<feature>/` and be barrel-exported via `src/features/<feature>/index.ts`.
+   - `src/app/` is strictly for Next.js routing: route `page.tsx` files in `src/app/**` **MUST** only re-export the feature's page component and metadata (`import { <Feature>Page, <feature>Metadata } from '@/features/<feature>'`). Never put feature UI, hooks, queries, or Server Actions directly inside `src/app/`.
 
 ---
 

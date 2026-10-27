@@ -72,7 +72,7 @@ export type ActionResult<T> =
 
 ---
 
-## 3. Authenticated Server Actions (`src/app/(app)/**/actions.ts`)
+## 3. Authenticated Server Actions (`src/features/**/actions.ts`)
 
 ### 3.1 Profile & Onboarding Actions
 
