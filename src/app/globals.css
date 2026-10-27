@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: #f8fafc;
+    --foreground: #0f172a;
+
+    --card: #ffffff;
+    --card-foreground: #0f172a;
+
+    --popover: #ffffff;
+    --popover-foreground: #0f172a;
+
+    --primary: #2563eb;
+    --primary-foreground: #ffffff;
+    --primary-hover: #1d4ed8;
+    --primary-subtle: #eff6ff;
+    --primary-text: #1e40af;
+
+    --secondary: #f1f5f9;
+    --secondary-foreground: #0f172a;
+
+    --muted: #f1f5f9;
+    --muted-foreground: #475569;
+
+    --accent: #f1f5f9;
+    --accent-foreground: #0f172a;
+
+    --destructive: #dc2626;
+    --destructive-foreground: #ffffff;
+
+    --border: #e2e8f0;
+    --border-strong: #cbd5e1;
+    --input: #e2e8f0;
+    --ring: #3b82f6;
+
+    --radius: 0.75rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    color: var(--foreground);
+    background-color: var(--background);
+  }
+}
+
+/* Print Specific Rules (FR-7.1, FR-7.2) */
+@media print {
+  body {
+    background-color: #ffffff !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
