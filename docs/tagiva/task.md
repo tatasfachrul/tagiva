@@ -80,7 +80,7 @@ This document breaks the entire **Tagiva** MVP into **15 self-contained, sequent
 
 ## Phase 2: Database Schema, Atomic RPCs, RLS & Google Authentication
 
-### [ ] `T-04` — Supabase SQL Migration (Tables, Constraints, Atomic RPCs, RLS & Storage) & DB Types
+### [x] `T-04` — Supabase SQL Migration (Tables, Constraints, Atomic RPCs, RLS & Storage) & DB Types
 - **Objective:** Create the canonical SQL migration implementing all tables, `CHECK` constraints, indexes, triggers, atomic RPC functions, Row Level Security (RLS) policies, and Storage bucket policies, plus matching TypeScript database types.
 - **Specification References:**
   - `DATABASE.md`: Sections 2, 3, 4, 5
@@ -97,7 +97,7 @@ This document breaks the entire **Tagiva** MVP into **15 self-contained, sequent
 
 ---
 
-### [ ] `T-05` — Supabase Clients, Google OAuth Flow (`/login`, `/auth/callback`) & Route Protection Middleware
+### [x] `T-05` — Supabase Clients, Google OAuth Flow (`/login`, `/auth/callback`) & Route Protection Middleware
 - **Objective:** Wire up browser, server, and service-role Supabase clients, enforce the Visitor authentication gate via Next.js Middleware, and build the Google Sign-In flow.
 - **Specification References:**
   - `PRD.md`: `D-14`, `D-24`, `D-31`, `D-38`, `D-60`
