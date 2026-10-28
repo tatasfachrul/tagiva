@@ -339,7 +339,17 @@ export function InteractiveTeaser() {
                     type="number"
                     min="1"
                     value={quantity}
-                    onChange={(e) => setQuantity(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === '') {
+                        setQuantity('');
+                      } else if (!val.includes('-')) {
+                        const parsed = parseFloat(val);
+                        if (!isNaN(parsed) && parsed >= 0) {
+                          setQuantity(val);
+                        }
+                      }
+                    }}
                     className="text-xs font-mono tabular-nums h-9 text-right"
                     required
                   />
@@ -353,7 +363,17 @@ export function InteractiveTeaser() {
                     type="number"
                     min="0"
                     value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === '') {
+                        setAmount('');
+                      } else if (!val.includes('-')) {
+                        const parsed = parseFloat(val);
+                        if (!isNaN(parsed) && parsed >= 0) {
+                          setAmount(val);
+                        }
+                      }
+                    }}
                     placeholder="10000000"
                     className="text-xs font-mono tabular-nums h-9 text-right"
                     required
@@ -401,7 +421,17 @@ export function InteractiveTeaser() {
                   type="number"
                   min="0"
                   value={discountValue}
-                  onChange={(e) => setDiscountValue(e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === '') {
+                      setDiscountValue('');
+                    } else if (!val.includes('-')) {
+                      const parsed = parseFloat(val);
+                      if (!isNaN(parsed) && parsed >= 0) {
+                        setDiscountValue(val);
+                      }
+                    }
+                  }}
                   className="text-xs font-mono tabular-nums h-9 text-right"
                 />
               </div>
@@ -453,8 +483,9 @@ export function InteractiveTeaser() {
                   </Label>
                   <Input
                     id="teaserAccNo"
+                    inputMode="numeric"
                     value={accountNumber}
-                    onChange={(e) => setAccountNumber(e.target.value)}
+                    onChange={(e) => setAccountNumber(e.target.value.replace(/\D/g, ''))}
                     className="h-8 text-xs font-mono tabular-nums mt-0.5"
                   />
                 </div>

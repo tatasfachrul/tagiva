@@ -181,7 +181,15 @@ export function useInvoiceBuilder({
   // Field change helper
   const handleChange = useCallback(
     <K extends keyof InvoiceBuilderFormValues>(key: K, value: InvoiceBuilderFormValues[K]) => {
-      setValues((prev) => ({ ...prev, [key]: value }));
+      let sanitized = value;
+      if (key === 'discountValue' && typeof value === 'number') {
+        sanitized = Math.max(0, value) as InvoiceBuilderFormValues[K];
+      } else if (key === 'taxRate' && typeof value === 'number') {
+        sanitized = Math.min(100, Math.max(0, value)) as InvoiceBuilderFormValues[K];
+      } else if (key === 'accountNumber' && typeof value === 'string') {
+        sanitized = value.replace(/\D/g, '') as InvoiceBuilderFormValues[K];
+      }
+      setValues((prev) => ({ ...prev, [key]: sanitized }));
     },
     [],
   );
@@ -222,10 +230,14 @@ export function useInvoiceBuilder({
         ...prev,
         items: prev.items.map((item) => {
           if (item.id !== id) return item;
-          const updated = { ...item, [field]: val };
+          const sanitizedVal =
+            (field === 'quantity' || field === 'unitPrice') && typeof val === 'number'
+              ? Math.max(0, val)
+              : val;
+          const updated = { ...item, [field]: sanitizedVal };
           if (field === 'quantity' || field === 'unitPrice') {
-            const qty = Number(field === 'quantity' ? val : updated.quantity) || 0;
-            const price = Number(field === 'unitPrice' ? val : updated.unitPrice) || 0;
+            const qty = Number(field === 'quantity' ? sanitizedVal : updated.quantity) || 0;
+            const price = Number(field === 'unitPrice' ? sanitizedVal : updated.unitPrice) || 0;
             updated.lineTotal = Math.round(qty * price * 100) / 100;
           }
           return updated;

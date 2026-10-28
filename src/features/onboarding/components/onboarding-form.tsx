@@ -314,8 +314,9 @@ export function OnboardingForm({ initialProfile }: OnboardingFormProps) {
                 </Label>
                 <Input
                   id="accountNumber"
+                  inputMode="numeric"
                   value={accountNumber}
-                  onChange={(e) => setAccountNumber(e.target.value)}
+                  onChange={(e) => setAccountNumber(e.target.value.replace(/\D/g, ''))}
                   placeholder="e.g. 1234567890"
                   className="mt-1 font-mono"
                 />

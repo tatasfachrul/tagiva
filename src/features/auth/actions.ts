@@ -26,8 +26,8 @@ export async function signInWithGoogleAction(
 
     const supabase = await createClient();
     const headersList = await headers();
-    const host = headersList.get('host') || 'localhost:3000';
-    const proto = headersList.get('x-forwarded-proto') || 'http';
+    const host = headersList.get('x-forwarded-host') || headersList.get('host') || 'localhost:3000';
+    const proto = headersList.get('x-forwarded-proto') || (process.env.NODE_ENV === 'production' ? 'https' : 'http');
     const origin = `${proto}://${host}`;
 
     const safeNext = sanitizeRedirectPath(targetNext, '/dashboard');

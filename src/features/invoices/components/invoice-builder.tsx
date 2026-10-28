@@ -383,13 +383,18 @@ export function InvoiceBuilder({
                         step="any"
                         aria-label={`Quantity for item ${idx + 1}`}
                         value={item.quantity || ''}
-                        onChange={(e) =>
-                          updateItem(
-                            item.id,
-                            'quantity',
-                            parseFloat(e.target.value) || 0,
-                          )
-                        }
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val === '') {
+                            updateItem(item.id, 'quantity', 0);
+                            return;
+                          }
+                          if (val.includes('-')) return;
+                          const parsed = parseFloat(val);
+                          if (!isNaN(parsed) && parsed >= 0) {
+                            updateItem(item.id, 'quantity', parsed);
+                          }
+                        }}
                         placeholder="Qty"
                         disabled={isReadOnly}
                         className="h-9 text-xs text-right tabular-nums bg-white"
@@ -402,13 +407,18 @@ export function InvoiceBuilder({
                         step="any"
                         aria-label={`Unit price for item ${idx + 1}`}
                         value={item.unitPrice || ''}
-                        onChange={(e) =>
-                          updateItem(
-                            item.id,
-                            'unitPrice',
-                            parseFloat(e.target.value) || 0,
-                          )
-                        }
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val === '') {
+                            updateItem(item.id, 'unitPrice', 0);
+                            return;
+                          }
+                          if (val.includes('-')) return;
+                          const parsed = parseFloat(val);
+                          if (!isNaN(parsed) && parsed >= 0) {
+                            updateItem(item.id, 'unitPrice', parsed);
+                          }
+                        }}
                         placeholder="Unit Price"
                         disabled={isReadOnly}
                         className="h-9 text-xs text-right tabular-nums bg-white"
@@ -479,9 +489,18 @@ export function InvoiceBuilder({
                   min="0"
                   step="any"
                   value={values.discountValue || ''}
-                  onChange={(e) =>
-                    handleChange('discountValue', parseFloat(e.target.value) || 0)
-                  }
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === '') {
+                      handleChange('discountValue', 0);
+                      return;
+                    }
+                    if (val.includes('-')) return;
+                    const parsed = parseFloat(val);
+                    if (!isNaN(parsed) && parsed >= 0) {
+                      handleChange('discountValue', parsed);
+                    }
+                  }}
                   placeholder={values.discountType === 'percent' ? '10%' : 'Amount'}
                   disabled={isReadOnly}
                   className="h-9 text-xs tabular-nums"
@@ -526,9 +545,18 @@ export function InvoiceBuilder({
                     max="100"
                     step="any"
                     value={values.taxRate || ''}
-                    onChange={(e) =>
-                      handleChange('taxRate', parseFloat(e.target.value) || 0)
-                    }
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === '') {
+                        handleChange('taxRate', 0);
+                        return;
+                      }
+                      if (val.includes('-')) return;
+                      const parsed = parseFloat(val);
+                      if (!isNaN(parsed) && parsed >= 0) {
+                        handleChange('taxRate', Math.min(100, parsed));
+                      }
+                    }}
                     placeholder="Rate %"
                     disabled={isReadOnly}
                     className="h-9 flex-1 text-xs text-right tabular-nums"
@@ -571,7 +599,7 @@ export function InvoiceBuilder({
                   name="accountNumber"
                   inputMode="numeric"
                   value={values.accountNumber}
-                  onChange={(e) => handleChange('accountNumber', e.target.value)}
+                  onChange={(e) => handleChange('accountNumber', e.target.value.replace(/\D/g, ''))}
                   placeholder="e.g. 1234567890"
                   disabled={isReadOnly}
                   className="h-9 mt-1 text-xs tabular-nums"

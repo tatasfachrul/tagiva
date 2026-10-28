@@ -16,8 +16,15 @@ import type { Database } from '@/types/database';
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get('code');
+  const errorParam = requestUrl.searchParams.get('error');
+  const errorDescription = requestUrl.searchParams.get('error_description');
   const rawNext = requestUrl.searchParams.get('next');
   const safeNext = sanitizeRedirectPath(rawNext, '/dashboard');
+
+  if (errorParam) {
+    console.error('[Auth Callback] Provider returned error:', errorParam, errorDescription);
+    return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(errorParam)}`, request.url));
+  }
 
   if (!code) {
     return NextResponse.redirect(new URL('/login?error=missing_code', request.url));
@@ -48,6 +55,7 @@ export async function GET(request: NextRequest) {
   const { data: authData, error: authError } = await supabase.auth.exchangeCodeForSession(code);
 
   if (authError || !authData.user) {
+    console.error('[Auth Callback] Failed to exchange code for session:', authError);
     return NextResponse.redirect(new URL('/login?error=auth_failed', request.url));
   }
 
@@ -59,12 +67,9 @@ export async function GET(request: NextRequest) {
     .maybeSingle()) as { data: { onboarding_completed: boolean } | null };
 
   // First-time users are routed to /onboarding unless already completed (D-38)
-  if (profile && !profile.onboarding_completed) {
-    const onboardingResponse = NextResponse.redirect(new URL('/onboarding', request.url));
-    redirectResponse.cookies.getAll().forEach((cookie) => {
-      onboardingResponse.cookies.set(cookie.name, cookie.value);
-    });
-    return onboardingResponse;
+  if (!profile || !profile.onboarding_completed) {
+    redirectResponse.headers.set('location', new URL('/onboarding', request.url).toString());
+    return redirectResponse;
   }
 
   return redirectResponse;

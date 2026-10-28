@@ -72,7 +72,14 @@ describe('Auth Error Sanitization', () => {
       'Authentication service is temporarily unavailable. Please try again later.',
     );
 
-    // 3. Arbitrary system error string passed in ?error=
+    // 3. access_denied
+    const pageAccessDenied = await LoginPage({
+      searchParams: Promise.resolve({ error: 'access_denied' }),
+    });
+    const htmlAccessDenied = renderToString(pageAccessDenied);
+    expect(htmlAccessDenied).toContain('Sign-in was canceled. Please try again when ready.');
+
+    // 4. Arbitrary system error string passed in ?error=
     const pageRawSystemError = await LoginPage({
       searchParams: Promise.resolve({
         error: "Your project's URL and Key are required to create a Supabase client! Check your Supabase project's API settings",

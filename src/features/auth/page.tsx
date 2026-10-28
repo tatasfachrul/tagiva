@@ -24,6 +24,7 @@ const AUTH_ERROR_MESSAGES: Record<string, string> = {
   auth_failed: 'Sign-in could not be completed. Please try again.',
   missing_code: 'Authentication session expired. Please sign in again.',
   config_missing: 'Authentication service is temporarily unavailable. Please try again later.',
+  access_denied: 'Sign-in was canceled. Please try again when ready.',
 };
 
 export async function LoginPage({ searchParams }: LoginPageProps) {
