@@ -54,6 +54,7 @@ export function OnboardingForm({ initialProfile }: OnboardingFormProps) {
 
   const [businessName, setBusinessName] = useState(initialProfile?.business_name || '');
   const [invoicePrefix, setInvoicePrefix] = useState(initialProfile?.invoice_prefix || 'USR');
+  const [prefixBlurred, setPrefixBlurred] = useState(false);
   const [defaultCurrency, setDefaultCurrency] = useState<SupportedCurrency>(
     initialProfile?.default_currency || 'IDR',
   );
@@ -166,6 +167,8 @@ export function OnboardingForm({ initialProfile }: OnboardingFormProps) {
               </p>
               <Input
                 id="businessName"
+                name="businessName"
+                autoComplete="organization"
                 value={businessName}
                 onChange={(e) => setBusinessName(e.target.value)}
                 placeholder="e.g. Acme Studio, John Doe Design"
@@ -175,32 +178,48 @@ export function OnboardingForm({ initialProfile }: OnboardingFormProps) {
             </div>
 
             {/* Invoice Prefix + Live Preview */}
-            <div className="space-y-2">
+            <div className="space-y-2 field-group">
               <Label htmlFor="invoicePrefix" className="text-sm font-semibold text-slate-900">
                 Invoice Prefix
               </Label>
-              <p className="text-xs text-slate-500">
+              <p id="onboarding-prefix-hint" className="text-xs text-slate-500">
                 2 to 6 uppercase letters or numbers (D-54). Changing prefix later will not reset your sequence.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
                 <Input
                   id="invoicePrefix"
+                  name="invoicePrefix"
                   value={invoicePrefix}
+                  minLength={2}
                   maxLength={6}
+                  pattern="[A-Z0-9]{2,6}"
+                  required
+                  autoCorrect="off"
+                  autoCapitalize="characters"
+                  spellCheck={false}
+                  aria-describedby="onboarding-prefix-hint"
+                  aria-errormessage="onboarding-prefix-error"
+                  aria-invalid={prefixBlurred && !isPrefixValid ? 'true' : undefined}
+                  onBlur={() => setPrefixBlurred(true)}
                   onChange={(e) => setInvoicePrefix(e.target.value.toUpperCase())}
                   placeholder="e.g. INV, ACME"
-                  className="w-full sm:w-44 font-mono uppercase"
+                  className={`w-full sm:w-44 font-mono uppercase ${
+                    prefixBlurred && !isPrefixValid ? 'user-invalid-fallback' : ''
+                  }`}
                 />
                 <div className="rounded-md bg-slate-100 border border-slate-200 px-3 py-2 text-xs text-slate-700 font-mono flex items-center gap-1.5 w-full sm:w-auto">
                   <span className="text-slate-500">Preview:</span>
                   <span className="font-semibold text-primary">{previewNumber}</span>
                 </div>
               </div>
-              {!isPrefixValid && invoicePrefix.length > 0 && (
-                <p className="text-xs text-rose-600 font-medium">
-                  Must be 2–6 uppercase alphanumeric characters (^[A-Z0-9]&#123;2,6&#125;$).
-                </p>
-              )}
+              <p
+                id="onboarding-prefix-error"
+                className={`text-xs text-rose-600 font-medium ${
+                  prefixBlurred && !isPrefixValid ? 'block' : 'field-error-msg'
+                }`}
+              >
+                Must be 2–6 uppercase alphanumeric characters (^[A-Z0-9]&#123;2,6&#125;$).
+              </p>
             </div>
           </div>
 
@@ -209,7 +228,7 @@ export function OnboardingForm({ initialProfile }: OnboardingFormProps) {
           {/* Section 2: Defaults */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <Label className="text-sm font-semibold text-slate-900">
+              <Label htmlFor="onboardingCurrency" className="text-sm font-semibold text-slate-900">
                 Default Currency
               </Label>
               <p className="text-xs text-slate-500 mb-1.5">
@@ -219,7 +238,7 @@ export function OnboardingForm({ initialProfile }: OnboardingFormProps) {
                 value={defaultCurrency}
                 onValueChange={(val) => setDefaultCurrency(val as SupportedCurrency)}
               >
-                <SelectTrigger className="w-full">
+                <SelectTrigger id="onboardingCurrency" className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

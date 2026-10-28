@@ -10,6 +10,7 @@
  * - Mobile responsive drawer overlay
  */
 
+import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -47,13 +48,29 @@ export function AppSidebar({
   onCloseMobile,
 }: AppSidebarProps) {
   const pathname = usePathname();
+  const drawerSheetRef = useRef<HTMLDivElement>(null);
 
-  const navContent = (
+  useEffect(() => {
+    if (!isOpenMobile) return;
+
+    drawerSheetRef.current?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onCloseMobile?.();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpenMobile, onCloseMobile]);
+
+  const renderNavContent = (navLabel: string, isLogoPriority: boolean) => (
     <div className="flex h-full flex-col justify-between bg-white border-r border-slate-200 p-4">
       {/* Top zone: Brand & Main Navigation */}
       <div className="space-y-6">
         <div className="flex items-center justify-between px-2 pt-2">
-          <TagivaLogo size="md" showWordmark={true} />
+          <TagivaLogo size="md" showWordmark={true} priority={isLogoPriority} />
           {onCloseMobile && (
             <Button
               type="button"
@@ -63,7 +80,7 @@ export function AppSidebar({
               className="lg:hidden text-slate-500 hover:text-slate-800"
               aria-label="Close menu"
             >
-              <X className="h-5 w-5" />
+              <X className="h-5 w-5" aria-hidden="true" />
             </Button>
           )}
         </div>
@@ -75,14 +92,14 @@ export function AppSidebar({
             className="w-full bg-primary hover:bg-primary-hover text-white font-medium justify-center gap-2 shadow-xs h-10"
           >
             <Link href="/invoices/new" onClick={onCloseMobile}>
-              <Plus className="h-4 w-4" />
+              <Plus className="h-4 w-4" aria-hidden="true" />
               <span>Create Invoice</span>
             </Link>
           </Button>
         </div>
 
         {/* Navigation Links */}
-        <nav className="space-y-1">
+        <nav aria-label={navLabel} className="space-y-1">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const isActive =
@@ -97,6 +114,7 @@ export function AppSidebar({
                 key={item.href}
                 href={item.href}
                 onClick={onCloseMobile}
+                aria-current={isActive ? 'page' : undefined}
                 className={cn(
                   'flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs sm:text-sm font-medium transition-colors',
                   isActive
@@ -105,6 +123,7 @@ export function AppSidebar({
                 )}
               >
                 <Icon
+                  aria-hidden="true"
                   className={cn(
                     'h-4 w-4 shrink-0',
                     isActive ? 'text-primary' : 'text-slate-500',
@@ -142,21 +161,31 @@ export function AppSidebar({
     <>
       {/* Desktop Sticky Sidebar (240px) */}
       <aside className="hidden lg:fixed lg:inset-y-0 lg:z-40 lg:flex lg:w-60 lg:flex-col">
-        {navContent}
+        {renderNavContent('Primary', true)}
       </aside>
 
       {/* Mobile Backdrop & Drawer */}
       {isOpenMobile && (
-        <div className="fixed inset-0 z-50 lg:hidden">
+        <div
+          id="mobile-navigation-drawer"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Mobile navigation"
+          className="fixed inset-0 z-50 lg:hidden"
+        >
           {/* Backdrop */}
           <div
             className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity"
             onClick={onCloseMobile}
             aria-hidden="true"
           />
-          {/* Mobile Drawer */}
-          <div className="fixed inset-y-0 left-0 w-72 max-w-[85vw] shadow-2xl">
-            {navContent}
+          {/* Mobile Drawer Sheet using svh to avoid iOS Safari address bar jump */}
+          <div
+            ref={drawerSheetRef}
+            tabIndex={-1}
+            className="fixed inset-y-0 left-0 h-svh w-72 max-w-[85vw] shadow-2xl focus:outline-none"
+          >
+            {renderNavContent('Mobile primary', false)}
           </div>
         </div>
       )}

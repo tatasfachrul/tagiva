@@ -108,7 +108,10 @@ export function ClientFormDialog({
 
           <div className="space-y-4 py-4">
             {errorMessage && (
-              <div className="rounded-md bg-rose-50 border border-rose-200 p-2.5 text-xs text-rose-700 font-medium">
+              <div
+                role="alert"
+                className="rounded-md bg-rose-50 border border-rose-200 p-2.5 text-xs text-rose-700 font-medium"
+              >
                 {errorMessage}
               </div>
             )}
@@ -119,6 +122,8 @@ export function ClientFormDialog({
               </Label>
               <Input
                 id="clientName"
+                name="name"
+                autoComplete="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g. Jane Smith"
@@ -133,6 +138,8 @@ export function ClientFormDialog({
               </Label>
               <Input
                 id="clientCompany"
+                name="company"
+                autoComplete="organization"
                 value={company}
                 onChange={(e) => setCompany(e.target.value)}
                 placeholder="e.g. Nexus Media Pte Ltd"
@@ -146,7 +153,12 @@ export function ClientFormDialog({
               </Label>
               <Input
                 id="clientEmail"
+                name="email"
                 type="email"
+                autoComplete="email"
+                autoCorrect="off"
+                autoCapitalize="off"
+                spellCheck={false}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="jane@nexusmedia.com"
@@ -160,6 +172,8 @@ export function ClientFormDialog({
               </Label>
               <Textarea
                 id="clientAddress"
+                name="address"
+                autoComplete="street-address"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 placeholder="Billing address, city, postal code"

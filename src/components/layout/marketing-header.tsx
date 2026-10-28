@@ -18,8 +18,8 @@ export function MarketingHeader() {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Brand Logo */}
         <div className="flex items-center gap-6">
-          <TagivaLogo size="md" href="/" />
-          <nav className="hidden md:flex items-center gap-6 text-xs font-semibold text-slate-600">
+          <TagivaLogo size="md" href="/" priority={true} />
+          <nav aria-label="Primary" className="hidden md:flex items-center gap-6 text-xs font-semibold text-slate-600">
             <Link
               href="/#features"
               className="hover:text-slate-900 transition-colors"

@@ -239,25 +239,33 @@ export function InvoiceListTable({ invoices, planState }: InvoiceListTableProps)
           </div>
 
           {/* Search Box */}
-          <div className="relative w-full sm:w-64">
-            <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400" />
+          <search className="relative w-full sm:w-64">
+            <Search
+              aria-hidden="true"
+              className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400 pointer-events-none"
+            />
             <Input
-              type="text"
+              type="search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by client or #"
+              aria-label="Search invoices by client or number"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck={false}
               className="h-8.5 pl-8 pr-8 text-xs bg-white"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
+                aria-label="Clear search"
                 className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600"
               >
-                <X className="h-3.5 w-3.5" />
+                <X className="h-3.5 w-3.5" aria-hidden="true" />
               </button>
             )}
-          </div>
+          </search>
         </div>
 
         {/* Invoice Table or Filtered Empty State */}
@@ -284,9 +292,17 @@ export function InvoiceListTable({ invoices, planState }: InvoiceListTableProps)
           </div>
         ) : (
           <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xs">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 text-[11px] font-semibold uppercase tracking-wider text-slate-600 border-b border-slate-200">
+            <div
+              tabIndex={0}
+              role="region"
+              aria-labelledby="invoices-table-caption"
+              className="overflow-x-auto [container-type:inline-size]"
+            >
+              <table className="w-full text-left text-xs border-separate border-spacing-0">
+                <caption id="invoices-table-caption" className="visually-hidden">
+                  Saved invoices
+                </caption>
+                <thead className="sticky top-0 z-10 bg-slate-50 text-[11px] font-semibold uppercase tracking-wider text-slate-600 border-b border-slate-200">
                   <tr>
                     <th scope="col" className="py-3 px-4">
                       Invoice
@@ -397,9 +413,12 @@ export function InvoiceListTable({ invoices, planState }: InvoiceListTableProps)
                                 variant="ghost"
                                 size="icon"
                                 className="h-8 w-8 text-slate-500 hover:text-slate-900"
-                                aria-label="Open invoice actions"
+                                aria-label={`Open actions for ${
+                                  invoice.invoiceNumber ||
+                                  `draft invoice for ${invoice.clientName || 'Untitled Client'}`
+                                }`}
                               >
-                                <MoreVertical className="h-4 w-4" />
+                                <MoreVertical className="h-4 w-4" aria-hidden="true" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-48 text-xs">

@@ -58,6 +58,7 @@ export function BusinessProfileForm({ initialProfile }: BusinessProfileFormProps
   const [taxId, setTaxId] = useState(initialProfile?.tax_id || '');
 
   const [invoicePrefix, setInvoicePrefix] = useState(initialProfile?.invoice_prefix || 'USR');
+  const [prefixBlurred, setPrefixBlurred] = useState(false);
   const [defaultCurrency, setDefaultCurrency] = useState<SupportedCurrency>(
     initialProfile?.default_currency || 'IDR',
   );
@@ -164,6 +165,8 @@ export function BusinessProfileForm({ initialProfile }: BusinessProfileFormProps
                 </Label>
                 <Input
                   id="businessName"
+                  name="businessName"
+                  autoComplete="organization"
                   value={businessName}
                   onChange={(e) => setBusinessName(e.target.value)}
                   placeholder="e.g. Acme Creative PT"
@@ -178,7 +181,12 @@ export function BusinessProfileForm({ initialProfile }: BusinessProfileFormProps
                 </Label>
                 <Input
                   id="email"
+                  name="email"
                   type="email"
+                  autoComplete="email"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck={false}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="billing@acme.com"
@@ -192,6 +200,9 @@ export function BusinessProfileForm({ initialProfile }: BusinessProfileFormProps
                 </Label>
                 <Input
                   id="phone"
+                  name="phone"
+                  type="tel"
+                  autoComplete="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+62 812 3456 7890"
@@ -205,6 +216,8 @@ export function BusinessProfileForm({ initialProfile }: BusinessProfileFormProps
                 </Label>
                 <Textarea
                   id="address"
+                  name="address"
+                  autoComplete="street-address"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   placeholder="Jl. Sudirman No. 1, Jakarta Pusat, 10220"
@@ -219,6 +232,10 @@ export function BusinessProfileForm({ initialProfile }: BusinessProfileFormProps
                 </Label>
                 <Input
                   id="taxId"
+                  name="taxId"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck={false}
                   value={taxId}
                   onChange={(e) => setTaxId(e.target.value)}
                   placeholder="e.g. 01.234.567.8-901.000"
@@ -235,44 +252,60 @@ export function BusinessProfileForm({ initialProfile }: BusinessProfileFormProps
                 <h3 className="text-sm font-bold text-slate-900">
                   Invoice Numbering & Defaults
                 </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p id="invoice-prefix-hint" className="text-xs text-slate-500 mt-0.5">
                   Changing your prefix does not reset sequence numbers (D-18).
                 </p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
+                <div className="field-group">
                   <Label htmlFor="invoicePrefix" className="text-xs font-semibold text-slate-800">
                     Invoice Prefix (2–6 chars)
                   </Label>
                   <div className="flex items-center gap-3 mt-1">
                     <Input
                       id="invoicePrefix"
+                      name="invoicePrefix"
                       value={invoicePrefix}
+                      minLength={2}
                       maxLength={6}
+                      pattern="[A-Z0-9]{2,6}"
+                      required
+                      autoCorrect="off"
+                      autoCapitalize="characters"
+                      spellCheck={false}
+                      aria-describedby="invoice-prefix-hint"
+                      aria-errormessage="invoice-prefix-error"
+                      aria-invalid={prefixBlurred && !isPrefixValid ? 'true' : undefined}
+                      onBlur={() => setPrefixBlurred(true)}
                       onChange={(e) => setInvoicePrefix(e.target.value.toUpperCase())}
-                      className="w-36 font-mono uppercase"
+                      className={`w-36 font-mono uppercase ${
+                        prefixBlurred && !isPrefixValid ? 'user-invalid-fallback' : ''
+                      }`}
                     />
                     <div className="rounded bg-slate-100 border border-slate-200 px-2.5 py-1.5 text-xs text-slate-700 font-mono">
                       {previewNumber}
                     </div>
                   </div>
-                  {!isPrefixValid && invoicePrefix.length > 0 && (
-                    <p className="text-xs text-rose-600 font-medium mt-1">
-                      Must be 2–6 uppercase alphanumeric characters.
-                    </p>
-                  )}
+                  <p
+                    id="invoice-prefix-error"
+                    className={`text-xs text-rose-600 font-medium mt-1 ${
+                      prefixBlurred && !isPrefixValid ? 'block' : 'field-error-msg'
+                    }`}
+                  >
+                    Must be 2–6 uppercase alphanumeric characters.
+                  </p>
                 </div>
 
                 <div>
-                  <Label className="text-xs font-semibold text-slate-800">
+                  <Label htmlFor="defaultCurrency" className="text-xs font-semibold text-slate-800">
                     Default Currency
                   </Label>
                   <Select
                     value={defaultCurrency}
                     onValueChange={(val) => setDefaultCurrency(val as SupportedCurrency)}
                   >
-                    <SelectTrigger className="mt-1">
+                    <SelectTrigger id="defaultCurrency" className="mt-1">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>

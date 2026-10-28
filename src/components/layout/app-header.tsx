@@ -30,6 +30,7 @@ interface AppHeaderProps {
   userEmail?: string;
   profile?: ProfileRow | null;
   planState: UserPlanState;
+  isMobileMenuOpen?: boolean;
   onMobileMenuToggle?: () => void;
 }
 
@@ -37,6 +38,7 @@ export function AppHeader({
   userEmail,
   profile,
   planState,
+  isMobileMenuOpen = false,
   onMobileMenuToggle,
 }: AppHeaderProps) {
   return (
@@ -51,8 +53,10 @@ export function AppHeader({
             onClick={onMobileMenuToggle}
             className="lg:hidden text-slate-600 hover:text-slate-900"
             aria-label="Toggle navigation menu"
+            aria-expanded={isMobileMenuOpen}
+            aria-controls="mobile-navigation-drawer"
           >
-            <Menu className="h-5 w-5" />
+            <Menu className="h-5 w-5" aria-hidden="true" />
           </Button>
         )}
 

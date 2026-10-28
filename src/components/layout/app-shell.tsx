@@ -41,6 +41,13 @@ export function AppShell({
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans antialiased">
+      <a
+        href="#main-content"
+        className="visually-hidden fixed top-2 left-2 z-50 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-white shadow-md"
+      >
+        Skip to main content
+      </a>
+
       {/* Expiry / Lapsed banners at the very top */}
       <SubscriptionBanners
         planState={planState}
@@ -57,16 +64,24 @@ export function AppShell({
           onCloseMobile={() => setMobileMenuOpen(false)}
         />
 
-        {/* Content Area */}
-        <div className="flex flex-1 flex-col lg:pl-60">
+        {/* Content Area — marked inert when mobile navigation drawer is open */}
+        <div
+          className="flex flex-1 flex-col lg:pl-60"
+          inert={mobileMenuOpen || undefined}
+        >
           <AppHeader
             userEmail={userEmail}
             profile={profile}
             planState={planState}
+            isMobileMenuOpen={mobileMenuOpen}
             onMobileMenuToggle={() => setMobileMenuOpen(true)}
           />
 
-          <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+          <main
+            id="main-content"
+            tabIndex={-1}
+            className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto focus:outline-none"
+          >
             {children}
           </main>
         </div>

@@ -4,6 +4,9 @@
 
 @layer base {
   :root {
+    color-scheme: light;
+    accent-color: var(--primary);
+
     --background: #f8fafc;
     --foreground: #0f172a;
 
@@ -25,6 +28,8 @@
     --muted: #f1f5f9;
     --muted-foreground: #475569;
 
+    --muted-subtle: #f8fafc;
+
     --accent: #f1f5f9;
     --accent-foreground: #0f172a;
 
@@ -39,7 +44,7 @@
     --radius: 0.75rem;
   }
 
-  * {
+  :where(*, *::before, *::after) {
     @apply border-border;
   }
 
@@ -47,6 +52,120 @@
     @apply bg-background text-foreground font-sans antialiased;
     color: var(--foreground);
     background-color: var(--background);
+    font-size-adjust: from-font;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  p,
+  li,
+  blockquote {
+    text-wrap: pretty;
+  }
+}
+
+/* Visually hidden utility that reveals on focus for skip links */
+.visually-hidden:where(:not(:focus-within, :active)) {
+  position: absolute !important;
+  clip-path: inset(50%) !important;
+  overflow: hidden !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  white-space: nowrap !important;
+}
+
+/* Auto-growing textarea with field-sizing: content */
+.auto-grow-textarea {
+  field-sizing: content;
+  height: auto;
+  width: 100%;
+  min-block-size: 3lh;
+  max-block-size: 10lh;
+}
+
+/* Deferred off-screen section rendering */
+.deferred-section {
+  content-visibility: auto;
+  contain-intrinsic-size: auto none auto 500px;
+}
+
+/* Post-interaction validation states (:user-invalid & fallback) */
+input:not([type='range']):where(:user-invalid, .user-invalid-fallback) {
+  border-color: var(--destructive);
+  background-color: #fef2f2;
+}
+
+.field-error-msg {
+  display: none;
+}
+
+input:where(:user-invalid, .user-invalid-fallback) ~ .field-error-msg,
+.field-group:has(input:where(:user-invalid, .user-invalid-fallback)) .field-error-msg {
+  display: block;
+}
+
+/* Progressive enhancement fallback for accent-color on checkboxes */
+@supports not (accent-color: var(--primary)) {
+  label.brand-checkbox-label input[type='checkbox'] {
+    position: absolute !important;
+    clip-path: inset(50%) !important;
+    overflow: hidden !important;
+    width: 1px !important;
+    height: 1px !important;
+    margin: -1px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  label.brand-checkbox-label {
+    position: relative;
+    padding-inline-start: 1.5rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  label.brand-checkbox-label input[type='checkbox'] + span::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid var(--border-strong);
+    background: white;
+    border-radius: 4px;
+    box-sizing: border-box;
+  }
+
+  label.brand-checkbox-label input[type='checkbox']:focus-visible + span::before {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  label.brand-checkbox-label input[type='checkbox']:checked + span::before {
+    background-color: var(--primary);
+    border-color: var(--primary);
+  }
+
+  label.brand-checkbox-label input[type='checkbox']:checked + span::after {
+    content: '✓';
+    position: absolute;
+    inset-inline-start: 0.2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: white;
+    font-weight: bold;
+    font-size: 0.75rem;
   }
 }
 

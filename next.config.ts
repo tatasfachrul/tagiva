@@ -26,7 +26,15 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=()',
+            value: 'camera=(), microphone=(), geolocation=(), focus-without-user-activation=()',
+          },
+          {
+            key: 'Cross-Origin-Opener-Policy',
+            value: 'same-origin-allow-popups',
+          },
+          {
+            key: 'Content-Security-Policy-Report-Only',
+            value: "object-src 'none'; base-uri 'self'; frame-ancestors 'none';",
           },
         ],
       },

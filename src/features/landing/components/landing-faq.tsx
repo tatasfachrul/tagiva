@@ -27,11 +27,11 @@ const FAQS = [
 
 export function LandingFaq() {
   return (
-    <section id="faq" className="py-20 bg-slate-50 border-t border-slate-200/80">
+    <section id="faq" className="deferred-section py-20 bg-slate-50 border-t border-slate-200/80">
       <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-xl mx-auto mb-12">
           <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-slate-200/60 text-slate-700 mb-3">
-            <HelpCircle className="h-5 w-5" />
+            <HelpCircle className="h-5 w-5" aria-hidden="true" />
           </div>
           <h2 className="font-heading text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
             Frequently Asked Questions
@@ -43,14 +43,19 @@ export function LandingFaq() {
 
         <div className="divide-y divide-slate-200/80 rounded-xl border border-slate-200 bg-white">
           {FAQS.map((faq, idx) => (
-            <div key={idx} className="p-6 space-y-2">
-              <h3 className="font-heading text-sm font-bold text-slate-900">
+            <details
+              key={idx}
+              name="landing-faq"
+              open={idx === 0}
+              className="group p-6"
+            >
+              <summary className="font-heading text-sm font-bold text-slate-900 cursor-pointer select-none">
                 {faq.q}
-              </h3>
-              <p className="text-xs text-slate-600 leading-relaxed">
+              </summary>
+              <p className="mt-2 text-xs text-slate-600 leading-relaxed">
                 {faq.a}
               </p>
-            </div>
+            </details>
           ))}
         </div>
 

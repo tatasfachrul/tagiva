@@ -7,6 +7,7 @@ interface TagivaLogoProps {
   size?: 'sm' | 'md' | 'lg';
   showWordmark?: boolean;
   href?: string;
+  priority?: boolean;
 }
 
 export function TagivaLogo({
@@ -14,6 +15,7 @@ export function TagivaLogo({
   size = 'md',
   showWordmark = true,
   href = '/',
+  priority = false,
 }: TagivaLogoProps) {
   const pixelSize = size === 'sm' ? 24 : size === 'lg' ? 48 : 32;
 
@@ -25,7 +27,7 @@ export function TagivaLogo({
         width={pixelSize}
         height={pixelSize}
         className="shrink-0 object-contain"
-        priority
+        priority={priority}
       />
       {showWordmark && (
         <span

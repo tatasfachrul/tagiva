@@ -64,6 +64,7 @@ export function ModernMinimalistWebPreview({
   return (
     <div
       data-testid="invoice-web-preview"
+      lang={invoice.language}
       className={cn(
         'relative mx-auto flex w-full max-w-[794px] flex-col justify-between bg-white p-10 sm:p-12 shadow-sm ring-1 ring-slate-200 text-slate-900 font-invoice transition-all',
         'min-h-[1123px] [aspect-ratio:1/1.4142]',
@@ -80,6 +81,9 @@ export function ModernMinimalistWebPreview({
               <img
                 src={invoice.logoUrl}
                 alt={invoice.senderName ? `${invoice.senderName} Logo` : 'Business Logo'}
+                width={180}
+                height={64}
+                decoding="async"
                 className="max-h-16 max-w-[180px] object-contain object-left mb-3"
               />
             ) : null}
@@ -192,6 +196,9 @@ export function ModernMinimalistWebPreview({
         {/* ================= LINE ITEMS TABLE ================= */}
         <div className="mt-8 overflow-hidden rounded-lg border border-slate-200">
           <table className="w-full text-left text-xs">
+            <caption className="visually-hidden">
+              {dict.documentTitle} line items
+            </caption>
             <thead className="bg-slate-50 text-[11px] font-semibold uppercase tracking-wider text-slate-600 border-b border-slate-200">
               <tr>
                 <th scope="col" className="w-8 py-2.5 pl-3 pr-1 text-center">

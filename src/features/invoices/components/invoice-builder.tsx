@@ -137,13 +137,15 @@ export function InvoiceBuilder({
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div>
-                <Label className="text-xs">Language</Label>
+                <Label htmlFor="invoice-language" className="text-xs">
+                  Language
+                </Label>
                 <Select
                   value={values.language}
                   onValueChange={(v) => handleChange('language', v as 'en' | 'id')}
                   disabled={isReadOnly}
                 >
-                  <SelectTrigger className="h-9 mt-1 text-xs">
+                  <SelectTrigger id="invoice-language" className="h-9 mt-1 text-xs">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -154,13 +156,15 @@ export function InvoiceBuilder({
               </div>
 
               <div>
-                <Label className="text-xs">Currency</Label>
+                <Label htmlFor="invoice-currency" className="text-xs">
+                  Currency
+                </Label>
                 <Select
                   value={values.currency}
                   onValueChange={(v) => handleChange('currency', v as typeof values.currency)}
                   disabled={isReadOnly}
                 >
-                  <SelectTrigger className="h-9 mt-1 text-xs">
+                  <SelectTrigger id="invoice-currency" className="h-9 mt-1 text-xs">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -174,8 +178,12 @@ export function InvoiceBuilder({
               </div>
 
               <div>
-                <Label className="text-xs">Issue Date</Label>
+                <Label htmlFor="invoice-issue-date" className="text-xs">
+                  Issue Date
+                </Label>
                 <Input
+                  id="invoice-issue-date"
+                  name="issueDate"
                   type="date"
                   value={values.issueDate}
                   onChange={(e) => handleChange('issueDate', e.target.value)}
@@ -185,8 +193,12 @@ export function InvoiceBuilder({
               </div>
 
               <div>
-                <Label className="text-xs">Due Date</Label>
+                <Label htmlFor="invoice-due-date" className="text-xs">
+                  Due Date
+                </Label>
                 <Input
+                  id="invoice-due-date"
+                  name="dueDate"
                   type="date"
                   value={values.dueDate}
                   onChange={(e) => handleChange('dueDate', e.target.value)}
@@ -201,7 +213,7 @@ export function InvoiceBuilder({
           <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-2xs space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <User className="h-4 w-4 text-slate-500" />
+                <User className="h-4 w-4 text-slate-500" aria-hidden="true" />
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                   Billed To (Client)
                 </h3>
@@ -210,14 +222,17 @@ export function InvoiceBuilder({
               {/* Saved Client Picker (FR-5.11) */}
               {savedClients.length > 0 && !isReadOnly && (
                 <div className="flex items-center gap-1.5">
-                  <Users className="h-3.5 w-3.5 text-slate-400" />
+                  <Users className="h-3.5 w-3.5 text-slate-400" aria-hidden="true" />
                   <Select
                     onValueChange={(id) => {
                       const c = savedClients.find((item) => item.id === id);
                       if (c) selectClient(c);
                     }}
                   >
-                    <SelectTrigger className="h-8 text-xs border-slate-200">
+                    <SelectTrigger
+                      aria-label="Pick saved client"
+                      className="h-8 text-xs border-slate-200"
+                    >
                       <SelectValue placeholder="Pick saved client" />
                     </SelectTrigger>
                     <SelectContent>
@@ -234,8 +249,13 @@ export function InvoiceBuilder({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs">Client Contact Name *</Label>
+                <Label htmlFor="builder-client-name" className="text-xs">
+                  Client Contact Name *
+                </Label>
                 <Input
+                  id="builder-client-name"
+                  name="clientName"
+                  autoComplete="name"
                   value={values.clientName}
                   onChange={(e) => handleChange('clientName', e.target.value)}
                   placeholder="e.g. John Doe"
@@ -244,8 +264,13 @@ export function InvoiceBuilder({
                 />
               </div>
               <div>
-                <Label className="text-xs">Company Name (Optional)</Label>
+                <Label htmlFor="builder-client-company" className="text-xs">
+                  Company Name (Optional)
+                </Label>
                 <Input
+                  id="builder-client-company"
+                  name="clientCompany"
+                  autoComplete="organization"
                   value={values.clientCompany}
                   onChange={(e) => handleChange('clientCompany', e.target.value)}
                   placeholder="e.g. Acme Corp"
@@ -254,9 +279,17 @@ export function InvoiceBuilder({
                 />
               </div>
               <div>
-                <Label className="text-xs">Client Email</Label>
+                <Label htmlFor="builder-client-email" className="text-xs">
+                  Client Email
+                </Label>
                 <Input
+                  id="builder-client-email"
+                  name="clientEmail"
                   type="email"
+                  autoComplete="email"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck={false}
                   value={values.clientEmail}
                   onChange={(e) => handleChange('clientEmail', e.target.value)}
                   placeholder="client@company.com"
@@ -265,8 +298,13 @@ export function InvoiceBuilder({
                 />
               </div>
               <div>
-                <Label className="text-xs">Client Billing Address</Label>
+                <Label htmlFor="builder-client-address" className="text-xs">
+                  Client Billing Address
+                </Label>
                 <Input
+                  id="builder-client-address"
+                  name="clientAddress"
+                  autoComplete="street-address"
                   value={values.clientAddress}
                   onChange={(e) => handleChange('clientAddress', e.target.value)}
                   placeholder="City, Country"
@@ -277,8 +315,12 @@ export function InvoiceBuilder({
             </div>
 
             {!isReadOnly && !values.customerId && (
-              <label className="flex items-center gap-2 pt-1 text-xs text-slate-600 cursor-pointer">
+              <label
+                htmlFor="save-customer-to-directory"
+                className="brand-checkbox-label flex items-center gap-2 pt-1 text-xs text-slate-600 cursor-pointer"
+              >
                 <input
+                  id="save-customer-to-directory"
                   type="checkbox"
                   checked={values.saveCustomerToDirectory}
                   onChange={(e) =>
@@ -286,7 +328,7 @@ export function InvoiceBuilder({
                   }
                   className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                 />
-                Save client to directory for future invoices (UX-A02)
+                <span>Save client to directory for future invoices (UX-A02)</span>
               </label>
             )}
           </div>
@@ -295,7 +337,7 @@ export function InvoiceBuilder({
           <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-2xs space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <FileText className="h-4 w-4 text-slate-500" />
+                <FileText className="h-4 w-4 text-slate-500" aria-hidden="true" />
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                   Line Items
                 </h3>
@@ -308,7 +350,7 @@ export function InvoiceBuilder({
                   onClick={addItem}
                   className="h-8 text-xs text-blue-600 border-blue-200 hover:bg-blue-50"
                 >
-                  <Plus className="h-3.5 w-3.5 mr-1" />
+                  <Plus className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
                   Add Item
                 </Button>
               )}
@@ -322,6 +364,7 @@ export function InvoiceBuilder({
                 >
                   <div className="flex-1 w-full">
                     <Input
+                      aria-label={`Description for item ${idx + 1}`}
                       value={item.description}
                       onChange={(e) =>
                         updateItem(item.id, 'description', e.target.value)
@@ -338,6 +381,7 @@ export function InvoiceBuilder({
                         type="number"
                         min="1"
                         step="any"
+                        aria-label={`Quantity for item ${idx + 1}`}
                         value={item.quantity || ''}
                         onChange={(e) =>
                           updateItem(
@@ -356,6 +400,7 @@ export function InvoiceBuilder({
                         type="number"
                         min="0"
                         step="any"
+                        aria-label={`Unit price for item ${idx + 1}`}
                         value={item.unitPrice || ''}
                         onChange={(e) =>
                           updateItem(
@@ -378,7 +423,7 @@ export function InvoiceBuilder({
                         aria-label={`Remove line item ${idx + 1}`}
                         className="h-9 w-9 text-slate-400 hover:text-rose-600 hover:bg-rose-50"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-4 w-4" aria-hidden="true" />
                       </Button>
                     )}
                   </div>
@@ -396,11 +441,14 @@ export function InvoiceBuilder({
               {/* Discount */}
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <Label className="text-xs">Discount</Label>
+                  <Label htmlFor="builder-discount-value" className="text-xs">
+                    Discount
+                  </Label>
                   {!isReadOnly && (
                     <div className="flex items-center gap-1 rounded bg-slate-100 p-0.5">
                       <button
                         type="button"
+                        aria-pressed={values.discountType === 'percent'}
                         onClick={() => handleChange('discountType', 'percent')}
                         className={`px-2 py-0.5 text-[11px] font-semibold rounded ${
                           values.discountType === 'percent'
@@ -412,6 +460,7 @@ export function InvoiceBuilder({
                       </button>
                       <button
                         type="button"
+                        aria-pressed={values.discountType === 'fixed'}
                         onClick={() => handleChange('discountType', 'fixed')}
                         className={`px-2 py-0.5 text-[11px] font-semibold rounded ${
                           values.discountType === 'fixed'
@@ -425,6 +474,7 @@ export function InvoiceBuilder({
                   )}
                 </div>
                 <Input
+                  id="builder-discount-value"
                   type="number"
                   min="0"
                   step="any"
@@ -441,10 +491,13 @@ export function InvoiceBuilder({
               {/* Tax */}
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <Label className="text-xs">Tax (PPN)</Label>
+                  <Label htmlFor="builder-tax-rate" className="text-xs">
+                    Tax (PPN)
+                  </Label>
                   {!isReadOnly && (
                     <button
                       type="button"
+                      aria-pressed={values.taxRate === 11}
                       onClick={togglePpn11}
                       className={`inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded border ${
                         values.taxRate === 11
@@ -452,13 +505,14 @@ export function InvoiceBuilder({
                           : 'border-slate-200 text-slate-600 hover:bg-slate-50'
                       }`}
                     >
-                      <Percent className="h-3 w-3" />
+                      <Percent className="h-3 w-3" aria-hidden="true" />
                       PPN 11%
                     </button>
                   )}
                 </div>
                 <div className="flex items-center gap-2">
                   <Input
+                    aria-label="Tax label"
                     value={values.taxLabel}
                     onChange={(e) => handleChange('taxLabel', e.target.value)}
                     placeholder="Label (e.g. PPN)"
@@ -466,6 +520,7 @@ export function InvoiceBuilder({
                     className="h-9 w-24 text-xs"
                   />
                   <Input
+                    id="builder-tax-rate"
                     type="number"
                     min="0"
                     max="100"
@@ -486,7 +541,7 @@ export function InvoiceBuilder({
           {/* Section 5: Payment Instructions & Notes */}
           <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-2xs space-y-4">
             <div className="flex items-center gap-2">
-              <Building2 className="h-4 w-4 text-slate-500" />
+              <Building2 className="h-4 w-4 text-slate-500" aria-hidden="true" />
               <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                 Payment Instructions & Notes
               </h3>
@@ -494,8 +549,12 @@ export function InvoiceBuilder({
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <Label className="text-xs">Bank Name</Label>
+                <Label htmlFor="builder-bank-name" className="text-xs">
+                  Bank Name
+                </Label>
                 <Input
+                  id="builder-bank-name"
+                  name="bankName"
                   value={values.bankName}
                   onChange={(e) => handleChange('bankName', e.target.value)}
                   placeholder="e.g. BCA, Mandiri"
@@ -504,8 +563,13 @@ export function InvoiceBuilder({
                 />
               </div>
               <div>
-                <Label className="text-xs">Account Number</Label>
+                <Label htmlFor="builder-account-number" className="text-xs">
+                  Account Number
+                </Label>
                 <Input
+                  id="builder-account-number"
+                  name="accountNumber"
+                  inputMode="numeric"
                   value={values.accountNumber}
                   onChange={(e) => handleChange('accountNumber', e.target.value)}
                   placeholder="e.g. 1234567890"
@@ -514,8 +578,12 @@ export function InvoiceBuilder({
                 />
               </div>
               <div>
-                <Label className="text-xs">Account Holder Name</Label>
+                <Label htmlFor="builder-account-holder" className="text-xs">
+                  Account Holder Name
+                </Label>
                 <Input
+                  id="builder-account-holder"
+                  name="accountHolder"
                   value={values.accountHolder}
                   onChange={(e) => handleChange('accountHolder', e.target.value)}
                   placeholder="e.g. PT Acme Indonesia"
@@ -526,13 +594,17 @@ export function InvoiceBuilder({
             </div>
 
             <div>
-              <Label className="text-xs">Terms & Notes (Optional)</Label>
+              <Label htmlFor="builder-notes" className="text-xs">
+                Terms & Notes (Optional)
+              </Label>
               <Textarea
+                id="builder-notes"
+                name="notes"
                 value={values.notes}
                 onChange={(e) => handleChange('notes', e.target.value)}
                 placeholder="Payment terms, bank branch, or thank you note..."
                 disabled={isReadOnly}
-                className="mt-1 text-xs h-20 resize-none"
+                className="mt-1 text-xs"
               />
             </div>
           </div>
