@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import {
-  renderInvoicePdfToBuffer,
-  normalizeInvoiceData,
-} from '@/components/invoice-templates';
+import { normalizeInvoiceData } from '@/components/invoice-templates';
+import { renderInvoicePdfToBuffer } from '@/components/invoice-templates/modern-minimalist/pdf-document';
 
 /**
  * GET /api/public/i/[token]/pdf

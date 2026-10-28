@@ -26,7 +26,12 @@ export function getTodayWibString(referenceDate: Date = new Date()): string {
 export function getYearAndMonthWib(
   dateInput: string | Date,
 ): { year: number; month: string } {
-  const date = typeof dateInput === 'string' ? new Date(`${dateInput}T12:00:00+07:00`) : dateInput;
+  const date =
+    typeof dateInput === 'string'
+      ? dateInput.includes('T')
+        ? new Date(dateInput)
+        : new Date(`${dateInput}T12:00:00+07:00`)
+      : dateInput;
 
   const yearFormatter = new Intl.DateTimeFormat('en-US', {
     timeZone: WIB_TIMEZONE,
@@ -78,7 +83,12 @@ export function addDaysWib(dateString: string, days: number): string {
  * Follows DS-A04 to avoid MM/DD vs DD/MM ambiguity.
  */
 export function formatDateWib(dateInput: string | Date, locale: 'en' | 'id' = 'en'): string {
-  const date = typeof dateInput === 'string' ? new Date(`${dateInput}T12:00:00+07:00`) : dateInput;
+  const date =
+    typeof dateInput === 'string'
+      ? dateInput.includes('T')
+        ? new Date(dateInput)
+        : new Date(`${dateInput}T12:00:00+07:00`)
+      : dateInput;
 
   const intlLocale = locale === 'id' ? 'id-ID' : 'en-GB';
 

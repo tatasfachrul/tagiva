@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import {
-  renderInvoicePdfToBuffer,
-  normalizeInvoiceData,
-} from '@/components/invoice-templates';
+import { normalizeInvoiceData } from '@/components/invoice-templates';
+import { renderInvoicePdfToBuffer } from '@/components/invoice-templates/modern-minimalist/pdf-document';
 import type { UserPlanState } from '@/lib/domain/entitlements';
 
 /**

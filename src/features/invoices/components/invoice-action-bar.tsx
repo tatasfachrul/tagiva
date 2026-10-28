@@ -14,9 +14,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   CheckCircle2,
-  Copy,
   Download,
-  ExternalLink,
   RotateCcw,
   Send,
   Share2,
@@ -48,14 +46,20 @@ import {
   issueInvoiceAction,
   updateInvoiceStatusAction,
   deleteInvoiceAction,
-  createOrTogglePublicLinkAction,
 } from '../actions';
+import { ShareLinkModal } from './share-link-modal';
+import { SendEmailModal } from './send-email-modal';
 import type { InvoiceStatus } from '@/lib/domain/status';
 import type { UserPlanState } from '@/lib/domain/entitlements';
 import { toast } from 'sonner';
 
 interface InvoiceActionBarProps {
   invoiceId?: string;
+  invoiceNumber?: string | null;
+  clientEmail?: string;
+  clientName?: string;
+  senderName?: string;
+  language?: 'en' | 'id';
   status: InvoiceStatus;
   planState: UserPlanState;
   isReadOnly?: boolean;
@@ -65,6 +69,11 @@ interface InvoiceActionBarProps {
 
 export function InvoiceActionBar({
   invoiceId,
+  invoiceNumber,
+  clientEmail = '',
+  clientName = '',
+  senderName = '',
+  language = 'en',
   status,
   planState,
   isReadOnly = false,
@@ -78,8 +87,8 @@ export function InvoiceActionBar({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
   const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [emailModalOpen, setEmailModalOpen] = useState(false);
   const [publicUrl, setPublicUrl] = useState<string | null>(null);
-  const [isTogglingLink, setIsTogglingLink] = useState(false);
 
   const isDraft = status === 'draft';
   const isPaid = status === 'paid';
@@ -148,30 +157,6 @@ export function InvoiceActionBar({
     }
   }
 
-  // Handle Public Link Toggle
-  async function handleTogglePublicLink(enable: boolean) {
-    if (!invoiceId) return;
-    setIsTogglingLink(true);
-    try {
-      const res = await createOrTogglePublicLinkAction({
-        invoiceId,
-        enabled: enable,
-      });
-      if (res.ok) {
-        setPublicUrl(res.data.enabled ? res.data.publicUrl : null);
-        toast.success(
-          res.data.enabled ? 'Public link enabled.' : 'Public link disabled.',
-        );
-        router.refresh();
-      } else {
-        toast.error(res.error.message);
-      }
-    } catch {
-      toast.error('Failed to update public link.');
-    } finally {
-      setIsTogglingLink(false);
-    }
-  }
 
   return (
     <TooltipProvider>
@@ -274,7 +259,7 @@ export function InvoiceActionBar({
               size="sm"
               onClick={() => {
                 if (isPro) {
-                  toast.info('Email dispatch modal is ready');
+                  setEmailModalOpen(true);
                 } else {
                   setUpgradeModalOpen(true);
                 }
@@ -483,75 +468,33 @@ export function InvoiceActionBar({
       </Dialog>
 
       {/* Pro Share Link Modal */}
-      <Dialog open={shareModalOpen} onOpenChange={setShareModalOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Share Public Link</DialogTitle>
-            <DialogDescription>
-              Provide your client with a live, unguessable link to view and download this invoice.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            {publicUrl ? (
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    readOnly
-                    value={publicUrl}
-                    className="w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-mono text-slate-700"
-                  />
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      navigator.clipboard.writeText(publicUrl);
-                      toast.success('Link copied to clipboard!');
-                    }}
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                </div>
-                <div className="flex justify-between items-center text-xs">
-                  <a
-                    href={publicUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-blue-600 hover:underline inline-flex items-center gap-1"
-                  >
-                    Open client view <ExternalLink className="h-3 w-3" />
-                  </a>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleTogglePublicLink(false)}
-                    disabled={isTogglingLink}
-                    className="text-rose-600 text-xs hover:bg-rose-50"
-                  >
-                    Revoke Link
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-4 space-y-3">
-                <p className="text-xs text-slate-500">
-                  Public link is currently disabled.
-                </p>
-                <Button
-                  type="button"
-                  onClick={() => handleTogglePublicLink(true)}
-                  disabled={isTogglingLink}
-                  className="bg-blue-600 hover:bg-blue-700 text-white text-xs"
-                >
-                  {isTogglingLink ? 'Generating...' : 'Enable Public Link'}
-                </Button>
-              </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+      {invoiceId && (
+        <ShareLinkModal
+          open={shareModalOpen}
+          onOpenChange={setShareModalOpen}
+          invoiceId={invoiceId}
+          initialPublicUrl={publicUrl}
+          initialEnabled={Boolean(publicUrl)}
+          onLinkStatusChange={(enabled, url) => {
+            setPublicUrl(url);
+          }}
+        />
+      )}
+
+      {/* Pro Send Email Modal */}
+      {invoiceId && (
+        <SendEmailModal
+          open={emailModalOpen}
+          onOpenChange={setEmailModalOpen}
+          invoiceId={invoiceId}
+          invoiceNumber={invoiceNumber ?? null}
+          clientEmail={clientEmail}
+          clientName={clientName}
+          senderName={senderName}
+          language={language}
+          isDraft={isDraft}
+        />
+      )}
     </TooltipProvider>
   );
 }

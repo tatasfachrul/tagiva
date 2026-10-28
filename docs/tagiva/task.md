@@ -197,7 +197,7 @@ This document breaks the entire **Tagiva** MVP into **15 self-contained, sequent
 
 ---
 
-### [ ] `T-10` — Invoices Dashboard (`/dashboard`)
+### [x] `T-10` — Invoices Dashboard (`/dashboard`)
 - **Objective:** Build the main Invoices Dashboard inside `src/features/dashboard/` showing summary cards, status filter tabs (`All`, `Draft`, `Sent`, `Paid`, `Overdue`), client/number search, invoice table with role-aware row actions, and empty state.
 - **Specification References:**
   - `PRD.md`: `D-12`, `D-15`, `D-21`, `D-28`–`D-30`, `D-33`, `FR-5.1`–`FR-5.12`
@@ -215,7 +215,7 @@ This document breaks the entire **Tagiva** MVP into **15 self-contained, sequent
 
 ## Phase 5: Pro Delivery Channels (Public Shareable Link & Resend Email)
 
-### [ ] `T-11` — Public Shareable Invoice Link (`/i/[token]`) & Link Management Modal
+### [x] `T-11` — Public Shareable Invoice Link (`/i/[token]`) & Link Management Modal
 - **Objective:** Implement the Pro-only public link generator/revoker (`createOrTogglePublicLinkAction`) and the public client-facing invoice feature (`src/features/public-invoice/`).
 - **Specification References:**
   - `PRD.md`: `D-11`, `D-17`, `D-40`, `D-41`, `D-43`, `FR-8.1`–`FR-8.4`
@@ -232,7 +232,7 @@ This document breaks the entire **Tagiva** MVP into **15 self-contained, sequent
 
 ---
 
-### [ ] `T-12` — In-App Email Delivery via Resend (`sendInvoiceEmailAction` & React Email Template)
+### [x] `T-12` — In-App Email Delivery via Resend (`sendInvoiceEmailAction` & React Email Template)
 - **Objective:** Build the bilingual React Email template (`InvoiceEmail`), the Send Email modal, and `sendInvoiceEmailAction` with attached PDF and daily rate-limit enforcement (`50/day/account` and `5/day/invoice`).
 - **Specification References:**
   - `PRD.md`: `D-11`, `D-17`, `D-51`, `D-57`, `FR-9.1`–`FR-9.6`
@@ -252,7 +252,7 @@ This document breaks the entire **Tagiva** MVP into **15 self-contained, sequent
 
 ## Phase 6: Indonesian Payment Gateway Billing, Cron Jobs & Public Marketing Pages
 
-### [ ] `T-13` — Indonesian Payment Gateway Adapter, Pro Upgrade Checkout, Webhook & `/settings/billing`
+### [x] `T-13` — Indonesian Payment Gateway Adapter, Pro Upgrade Checkout, Webhook & `/settings/billing`
 - **Objective:** Implement the `PaymentGatewayAdapter` (`D-48`) supporting `1m (Rp29k)`, `3m (Rp79k)`, `6m (Rp150k)`, and `12m (Rp250k)` in both `manual` and `auto_renew` modes, the signed webhook handler (`POST /api/webhooks/billing`), and `src/features/settings/billing/`.
 - **Specification References:**
   - `PRD.md`: `D-10`, `D-16`, `D-22`, `D-23`, `D-48`, `D-52`, `A-14`, `FR-10.1`–`FR-10.9`
@@ -271,7 +271,7 @@ This document breaks the entire **Tagiva** MVP into **15 self-contained, sequent
 
 ---
 
-### [ ] `T-14` — Daily Vercel Cron Job (`/api/cron/daily`) & Subscription Reminder Emails
+### [x] `T-14` — Daily Vercel Cron Job (`/api/cron/daily`) & Subscription Reminder Emails
 - **Objective:** Implement the daily `08:00 WIB` (`01:00 UTC`) cron route handler that expires elapsed subscriptions, updates `Overdue` invoices, and dispatches deduplicated `30d/14d/3d/0d` manual reminders and `3d` auto-renew notices.
 - **Specification References:**
   - `PRD.md`: `D-23`, `D-26`, `D-50`, `D-52`, `D-53`, `A-20`, `A-21`
@@ -288,7 +288,7 @@ This document breaks the entire **Tagiva** MVP into **15 self-contained, sequent
 
 ---
 
-### [ ] `T-15` — Marketing Landing Page (`/`), Pricing Page (`/pricing`), Legal Pages & E2E Test Suite
+### [x] `T-15` — Marketing Landing Page (`/`), Pricing Page (`/pricing`), Legal Pages & E2E Test Suite
 - **Objective:** Build the public marketing features (`src/features/landing/`, `src/features/pricing/`, `src/features/legal/`) with the Visitor sign-in gate (`D-24`, `D-31`) and run the complete Playwright E2E and Vitest quality gates.
 - **Specification References:**
   - `PRD.md`: `D-09`, `D-14`, `D-16`, `D-24`, `D-31`, `D-58`–`D-60`, `A-22`

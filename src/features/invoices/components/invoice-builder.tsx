@@ -83,6 +83,11 @@ export function InvoiceBuilder({
       {/* Top Action Bar */}
       <InvoiceActionBar
         invoiceId={initialInvoice?.id}
+        invoiceNumber={initialInvoice?.invoice_number}
+        clientEmail={values.clientEmail}
+        clientName={values.clientName}
+        senderName={values.senderName}
+        language={values.language}
         status={initialInvoice?.status ?? 'draft'}
         planState={planState}
         isReadOnly={isReadOnly}

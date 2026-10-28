@@ -15,10 +15,10 @@ import { describe, it, expect } from 'vitest';
 import { renderToString } from 'react-dom/server';
 import {
   ModernMinimalistWebPreview,
-  renderInvoicePdfToBuffer,
   normalizeInvoiceData,
   type InvoiceTemplateData,
 } from '../index';
+import { renderInvoicePdfToBuffer } from '../modern-minimalist/pdf-document';
 import { validateSupabaseLogoUrl } from '@/lib/security/ssrf';
 
 const BASE_INVOICE: InvoiceTemplateData = {
