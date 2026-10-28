@@ -58,12 +58,8 @@ export function HowItWorksSection() {
                 <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-[#004ac6] text-white font-bold text-base mb-4 shadow-sm">
                   {item.step}
                 </div>
-                <h3 className="text-lg font-bold text-[#0b1c30] mb-2">
-                  {item.title}
-                </h3>
-                <p className="text-sm text-[#434655] leading-relaxed">
-                  {item.description}
-                </p>
+                <h3 className="text-lg font-bold text-[#0b1c30] mb-2">{item.title}</h3>
+                <p className="text-sm text-[#434655] leading-relaxed">{item.description}</p>
               </div>
 
               <div className="mt-6 p-3 rounded-lg bg-[#eff4ff] text-xs text-[#0b1c30] flex items-center gap-2">

@@ -51,7 +51,10 @@ const TESTIMONIALS = [
 
 export function SocialProofSection() {
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12" id="testimonials">
+    <section
+      className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 bg-white rounded-3xl"
+      id="testimonials"
+    >
       {/* Metrics Banner */}
       <div className="p-8 rounded-2xl bg-[#eff4ff] border border-[#dce9ff] mb-16 shadow-xs">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 divide-y md:divide-y-0 md:divide-x divide-[#dce9ff]">
@@ -63,9 +66,7 @@ export function SocialProofSection() {
               <div className="text-sm sm:text-base font-semibold text-[#0b1c30] mt-1">
                 {metric.title}
               </div>
-              <p className="text-xs text-[#434655] mt-0.5">
-                {metric.subtitle}
-              </p>
+              <p className="text-xs text-[#434655] mt-0.5">{metric.subtitle}</p>
             </div>
           ))}
         </div>
@@ -99,9 +100,7 @@ export function SocialProofSection() {
                   <Star key={starIdx} className="size-4 stroke-[1.5] text-[#004ac6]" />
                 ))}
               </div>
-              <p className="text-sm text-[#0b1c30] leading-relaxed">
-                &ldquo;{item.quote}&rdquo;
-              </p>
+              <p className="text-sm text-[#0b1c30] leading-relaxed">&ldquo;{item.quote}&rdquo;</p>
             </div>
 
             <div className="pt-4 mt-6 border-t border-[#e5eeff] flex items-center gap-3">
@@ -111,12 +110,8 @@ export function SocialProofSection() {
                 {item.initials}
               </div>
               <div className="min-w-0">
-                <div className="text-sm font-semibold text-[#0b1c30] truncate">
-                  {item.name}
-                </div>
-                <div className="text-xs text-[#434655] truncate">
-                  {item.role}
-                </div>
+                <div className="text-sm font-semibold text-[#0b1c30] truncate">{item.name}</div>
+                <div className="text-xs text-[#434655] truncate">{item.role}</div>
               </div>
             </div>
           </div>
