@@ -29,18 +29,18 @@ import { PrivacyPage, TermsPage } from '@/features/legal';
 describe('Landing & Marketing Pages', () => {
   it('renders landing page with all hero, teaser, features, and FAQ sections', () => {
     const html = renderToString(<LandingPage />);
-    expect(html).toContain('Professional Invoices in Seconds');
-    expect(html).toContain('Try It Now');
-    expect(html).toContain('Start Invoicing Free');
+    expect(html).toContain('Modern invoicing for Indonesian freelancers and small businesses.');
+    expect(html).toContain('Live Split-Screen Invoice Builder');
+    expect(html).toContain('Sign in with Google');
     expect(html).toContain('Frequently Asked Questions');
   });
 
   it('renders interactive teaser with default sample data and login CTA gate (D-24, D-31)', () => {
     const html = renderToString(<InteractiveTeaser />);
-    expect(html).toContain('PT Mahakarya Digital');
-    expect(html).toContain('Brand Identity &amp; UI/UX Design');
+    expect(html).toContain('PT Contoh');
+    expect(html).toContain('UI/UX Design Phase 1');
     expect(html).toContain('Preview &amp; Create Invoice');
-    expect(html).toContain('Google Sign-In required to issue');
+    expect(html).toContain('Sign in with Google required to save or issue');
   });
 
   it('renders pricing table with canonical pricing tiers (D-16)', () => {

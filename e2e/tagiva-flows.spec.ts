@@ -21,7 +21,9 @@ test.describe('Landing & Marketing Journey', () => {
 
     // Check Hero
     await expect(
-      page.getByRole('heading', { name: /Professional Invoices in Seconds/i })
+      page.getByRole('heading', {
+        name: /Modern invoicing for Indonesian freelancers and small businesses/i,
+      })
     ).toBeVisible();
 
     // Check FAQ
