@@ -65,6 +65,15 @@ export function getDaysUntilDateWib(targetDateString: string, fromDateString?: s
 }
 
 /**
+ * Adds a number of calendar days to a WIB YYYY-MM-DD date string.
+ */
+export function addDaysWib(dateString: string, days: number): string {
+  const date = new Date(`${dateString}T12:00:00+07:00`);
+  date.setDate(date.getDate() + days);
+  return getTodayWibString(date);
+}
+
+/**
  * Formats a YYYY-MM-DD date string or Date into DD MMM YYYY (e.g. 27 Oct 2026 or 27 Okt 2026).
  * Follows DS-A04 to avoid MM/DD vs DD/MM ambiguity.
  */

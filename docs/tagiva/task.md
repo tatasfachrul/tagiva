@@ -119,7 +119,7 @@ This document breaks the entire **Tagiva** MVP into **15 self-contained, sequent
 
 ## Phase 3: Onboarding, Authenticated App Shell & Business Settings
 
-### [ ] `T-06` — 1-Step Business Onboarding (`/onboarding`) & Profile/Logo Server Actions
+### [x] `T-06` — 1-Step Business Onboarding (`/onboarding`) & Profile/Logo Server Actions
 - **Objective:** Build the post-signup 1-Step Business Setup screen (`D-38`) in `src/features/onboarding/` and the profile & Pro logo upload Server Actions in `src/features/settings/actions.ts` (including server-side magic-byte inspection).
 - **Specification References:**
   - `PRD.md`: `D-04`, `D-11`, `D-13`, `D-25`, `D-32`, `D-38`, `D-39`, `D-54`, `A-06`
@@ -136,7 +136,7 @@ This document breaks the entire **Tagiva** MVP into **15 self-contained, sequent
 
 ---
 
-### [ ] `T-07` — Authenticated App Shell, Plan Indicators, `/settings` & `/clients` Directory
+### [x] `T-07` — Authenticated App Shell, Plan Indicators, `/settings` & `/clients` Directory
 - **Objective:** Build the authenticated `(app)` layout shell with navigation, UI language switcher (`EN | ID`), Free Tier Slot Counter (`X / 3`), Subscription Expiry Banner (`30d/14d/3d/0d`), Lapsed Read-Only Banner, Business Settings feature (`src/features/settings/`), and Clients Directory feature (`src/features/clients/`).
 - **Specification References:**
   - `PRD.md`: `D-04`, `D-12`, `D-23`, `D-25`, `D-26`, `D-28`, `D-32`, `D-39`, `D-47`, `D-58`, `D-60`, `FR-4.3`–`FR-4.5`, `FR-5.11`
@@ -158,7 +158,7 @@ This document breaks the entire **Tagiva** MVP into **15 self-contained, sequent
 
 ## Phase 4: "Modern Minimalist" Template, PDF Engine, Invoice Builder & Dashboard
 
-### [ ] `T-08` — Single MVP Invoice Template ("Modern Minimalist") — Web Preview & `@react-pdf/renderer` PDF Engine
+### [x] `T-08` — Single MVP Invoice Template ("Modern Minimalist") — Web Preview & `@react-pdf/renderer` PDF Engine
 - **Objective:** Build the pixel-accurate A4 "Modern Minimalist" invoice template in both HTML/Tailwind (`WebPreview`) and `@react-pdf/renderer` (`PdfDocument`), using `Inter` exclusively (`D-41`), plus the authenticated and public PDF download API routes.
 - **Specification References:**
   - `PRD.md`: `D-03`, `D-11`, `D-17`, `D-27`, `D-28`, `D-30`, `D-36`, `D-40`–`D-43`, `D-49`, `FR-7.1`–`FR-7.5`
@@ -177,7 +177,7 @@ This document breaks the entire **Tagiva** MVP into **15 self-contained, sequent
 
 ---
 
-### [ ] `T-09` — Interactive Invoice Builder (`/invoices/new`, `/invoices/[id]`) & Invoice Lifecycle Server Actions
+### [x] `T-09` — Interactive Invoice Builder (`/invoices/new`, `/invoices/[id]`) & Invoice Lifecycle Server Actions
 - **Objective:** Implement the core invoice feature (`src/features/invoices/`): Server Actions (`saveInvoiceDraftAction`, `issueInvoiceAction`, `updateInvoiceStatusAction`, `deleteInvoiceAction`, `duplicateInvoiceAction`), queries, hooks, and the responsive split-screen/tabbed Invoice Builder UI.
 - **Specification References:**
   - `PRD.md`: `D-12`, `D-13`, `D-15`, `D-17`, `D-18`, `D-21`, `D-23`, `D-25`, `D-27`–`D-30`, `D-32`, `D-33`, `D-44`–`D-46`, `D-55`, `D-56`, `FR-1`, `FR-2`, `FR-5`

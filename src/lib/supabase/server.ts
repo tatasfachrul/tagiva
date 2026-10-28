@@ -8,10 +8,10 @@
 
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import type { SupabaseClient, User } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
-import type { User } from '@supabase/supabase-js';
 
-export async function createClient() {
+export async function createClient(): Promise<SupabaseClient<Database>> {
   const cookieStore = await cookies();
 
   return createServerClient<Database>(
@@ -34,7 +34,7 @@ export async function createClient() {
         },
       },
     },
-  );
+  ) as unknown as SupabaseClient<Database>;
 }
 
 /**

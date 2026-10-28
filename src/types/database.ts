@@ -53,12 +53,7 @@ export interface Database {
           invoice_prefix?: string;
           default_currency?: SupportedCurrency;
           default_language?: 'en' | 'id';
-          bank_details?: {
-            bank_name: string;
-            account_number: string;
-            account_holder: string;
-            notes: string;
-          };
+          bank_details?: Json;
           onboarding_completed?: boolean;
           created_at?: string;
           updated_at?: string;
@@ -74,12 +69,7 @@ export interface Database {
           invoice_prefix?: string;
           default_currency?: SupportedCurrency;
           default_language?: 'en' | 'id';
-          bank_details?: {
-            bank_name: string;
-            account_number: string;
-            account_holder: string;
-            notes: string;
-          };
+          bank_details?: Json;
           onboarding_completed?: boolean;
           created_at?: string;
           updated_at?: string;
@@ -158,7 +148,7 @@ export interface Database {
           sender_address: string;
           sender_tax_id: string;
           logo_url: string | null;
-          payment_instructions: Record<string, string>;
+          payment_instructions: Json;
           client_name: string;
           client_company: string;
           client_email: string;
@@ -197,7 +187,7 @@ export interface Database {
           sender_address?: string;
           sender_tax_id?: string;
           logo_url?: string | null;
-          payment_instructions?: Record<string, string>;
+          payment_instructions?: Json;
           client_name?: string;
           client_company?: string;
           client_email?: string;
@@ -236,7 +226,7 @@ export interface Database {
           sender_address?: string;
           sender_tax_id?: string;
           logo_url?: string | null;
-          payment_instructions?: Record<string, string>;
+          payment_instructions?: Json;
           client_name?: string;
           client_company?: string;
           client_email?: string;

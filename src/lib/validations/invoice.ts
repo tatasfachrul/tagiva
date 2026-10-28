@@ -82,6 +82,10 @@ export const DeleteInvoiceSchema = z.object({
   invoiceId: z.string().uuid('Invalid invoice ID'),
 });
 
+export const DuplicateInvoiceSchema = z.object({
+  invoiceId: z.string().uuid('Invalid invoice ID'),
+});
+
 export const CreateOrTogglePublicLinkSchema = z.object({
   invoiceId: z.string().uuid('Invalid invoice ID'),
   enabled: z.boolean(),
@@ -105,5 +109,6 @@ export type SaveInvoiceInput = z.infer<typeof SaveInvoiceSchema>;
 export type IssueInvoiceInput = z.infer<typeof IssueInvoiceSchema>;
 export type UpdateInvoiceStatusInput = z.infer<typeof UpdateInvoiceStatusSchema>;
 export type DeleteInvoiceInput = z.infer<typeof DeleteInvoiceSchema>;
+export type DuplicateInvoiceInput = z.infer<typeof DuplicateInvoiceSchema>;
 export type CreateOrTogglePublicLinkInput = z.infer<typeof CreateOrTogglePublicLinkSchema>;
 export type SendInvoiceEmailInput = z.infer<typeof SendInvoiceEmailSchema>;
