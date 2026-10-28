@@ -1,15 +1,5 @@
 import React from 'react';
-import {
-  CreditCard,
-  ReceiptText,
-  Share2,
-  Zap,
-  TrendingUp,
-  CheckCircle2,
-  Link2,
-  Sparkles,
-  BadgeCheck,
-} from 'lucide-react';
+import { CreditCard, Share2, Zap, TrendingUp, Link2, Sparkles } from 'lucide-react';
 
 const VALUE_PROPOSITIONS = [
   {
@@ -22,17 +12,6 @@ const VALUE_PROPOSITIONS = [
     tagIcon: TrendingUp,
     tagColor: 'text-[#004ac6]',
     tagText: 'Less follow-up stress',
-  },
-  {
-    title: '100% Tax & Legal Compliant',
-    description:
-      'Auto-calculated 11% PPN with standardized formatting ready for your clients’ finance teams.',
-    icon: ReceiptText,
-    topBorder: 'border-t-[#3d7c00]',
-    iconWrapper: 'bg-[#acf774]/30 text-[#2e6100]',
-    tagIcon: CheckCircle2,
-    tagColor: 'text-[#2e6100]',
-    tagText: 'Finance-team approved',
   },
   {
     title: 'Shareable Links & Instant PDF',
@@ -62,26 +41,23 @@ export function FeaturesGrid() {
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20" id="features">
       <div className="text-center max-w-3xl mx-auto mb-14">
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#dbe1ff] text-[#004ac6] text-xs font-semibold mb-3">
-          <BadgeCheck className="size-4" aria-hidden="true" />
-          <span>Built for Indonesia&apos;s Modern Workforce</span>
-        </span>
         <h2 className="text-3xl sm:text-4xl font-bold text-[#0b1c30] tracking-tight">
           Why Freelancers &amp; Agencies Choose Tagiva
         </h2>
         <p className="mt-3 text-base text-[#434655] leading-relaxed max-w-2xl mx-auto">
-          Everything you need to invoice clients with absolute confidence, look like an enterprise studio, and collect payments on schedule.
+          Everything you need to invoice clients with absolute confidence, look like an enterprise
+          studio, and collect payments on schedule.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="flex flex-wrap justify-center items-stretch gap-6 max-w-6xl mx-auto">
         {VALUE_PROPOSITIONS.map((prop, idx) => {
           const Icon = prop.icon;
           const TagIcon = prop.tagIcon;
           return (
             <div
               key={idx}
-              className={`p-6 rounded-2xl bg-white border-t-2 ${prop.topBorder} border-x border-b border-[#e5eeff] shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between`}
+              className={`w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] max-w-sm p-6 rounded-2xl bg-white border-t-2 ${prop.topBorder} border-x border-b border-[#e5eeff] shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between mx-auto sm:mx-0`}
             >
               <div>
                 <div
@@ -89,12 +65,8 @@ export function FeaturesGrid() {
                 >
                   <Icon className="size-6" aria-hidden="true" />
                 </div>
-                <h3 className="text-lg font-bold text-[#0b1c30] mb-2">
-                  {prop.title}
-                </h3>
-                <p className="text-sm text-[#434655] leading-relaxed">
-                  {prop.description}
-                </p>
+                <h3 className="text-lg font-bold text-[#0b1c30] mb-2">{prop.title}</h3>
+                <p className="text-sm text-[#434655] leading-relaxed">{prop.description}</p>
               </div>
 
               <div
