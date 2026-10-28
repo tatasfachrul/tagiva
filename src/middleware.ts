@@ -59,6 +59,11 @@ export async function middleware(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
+  // Pre-production: redirect /login to /coming-soon until production readiness
+  if (isAuthOnlyRoute(pathname)) {
+    return NextResponse.redirect(new URL('/coming-soon', request.url));
+  }
+
   // 1. Unauthenticated visitors accessing protected routes (D-24, D-31)
   if (!user && isProtectedRoute(pathname)) {
     const redirectUrl = new URL('/login', request.url);
