@@ -42,27 +42,27 @@ export type CancelAutoRenewInput = z.infer<typeof CancelAutoRenewSchema>;
 export async function createSubscriptionCheckoutAction(
   rawInput: CreateSubscriptionCheckoutInput,
 ): Promise<ActionResult<{ checkoutUrl: string }>> {
-  const parsed = CreateSubscriptionCheckoutSchema.safeParse(rawInput);
-  if (!parsed.success) {
-    return validationError(parsed.error);
-  }
-
-  const { durationMonths, billingMode } = parsed.data;
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return err('UNAUTHENTICATED', 'You must be signed in to purchase a plan.');
-  }
-
-  const amountIdr = CANONICAL_PRICING_IDR[durationMonths as PlanDurationMonths];
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://tagiva.com';
-
-  const adapter = getPaymentGatewayAdapter();
   try {
+    const parsed = CreateSubscriptionCheckoutSchema.safeParse(rawInput);
+    if (!parsed.success) {
+      return validationError(parsed.error);
+    }
+
+    const { durationMonths, billingMode } = parsed.data;
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return err('UNAUTHENTICATED', 'You must be signed in to purchase a plan.');
+    }
+
+    const amountIdr = CANONICAL_PRICING_IDR[durationMonths as PlanDurationMonths];
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://tagiva.com';
+
+    const adapter = getPaymentGatewayAdapter();
     const result = await adapter.createCheckout({
       userId: user.id,
       email: user.email || '',
@@ -75,62 +75,67 @@ export async function createSubscriptionCheckoutAction(
 
     return ok({ checkoutUrl: result.checkoutUrl });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : 'Failed to initialize payment gateway';
-    return err('INTERNAL_ERROR', message);
+    console.error('Failed to create subscription checkout:', error);
+    return err('INTERNAL_ERROR', 'Unable to initiate checkout. Please try again later.');
   }
 }
 
 export async function cancelAutoRenewAction(
   rawInput: CancelAutoRenewInput,
 ): Promise<ActionResult<{ cancelled: boolean }>> {
-  const parsed = CancelAutoRenewSchema.safeParse(rawInput);
-  if (!parsed.success) {
-    return validationError(parsed.error);
+  try {
+    const parsed = CancelAutoRenewSchema.safeParse(rawInput);
+    if (!parsed.success) {
+      return validationError(parsed.error);
+    }
+
+    const { subscriptionId } = parsed.data;
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return err('UNAUTHENTICATED', 'You must be signed in.');
+    }
+
+    const { data: sub, error: fetchError } = await supabase
+      .from('subscriptions')
+      .select('*')
+      .eq('id', subscriptionId)
+      .eq('user_id', user.id)
+      .single();
+
+    if (fetchError || !sub) {
+      return err('NOT_FOUND', 'Subscription record not found.');
+    }
+
+    // Update subscription billing mode to manual in database
+    const { error: updateError } = await supabase
+      .from('subscriptions')
+      .update({
+        billing_mode: 'manual',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', subscriptionId)
+      .eq('user_id', user.id);
+
+    if (updateError) {
+      console.error('Failed to update subscription settings:', updateError);
+      return err('INTERNAL_ERROR', 'Failed to update subscription settings. Please try again.');
+    }
+
+    // Cancel recurring mandate on gateway if ID is present
+    if (sub.gateway_subscription_id) {
+      const adapter = getPaymentGatewayAdapter();
+      await adapter.cancelAutoRenew(sub.gateway_subscription_id);
+    }
+
+    revalidatePath('/settings/billing');
+    return ok({ cancelled: true });
+  } catch (error) {
+    console.error('Failed to cancel auto-renewal:', error);
+    return err('INTERNAL_ERROR', 'Failed to update subscription settings. Please try again.');
   }
-
-  const { subscriptionId } = parsed.data;
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return err('UNAUTHENTICATED', 'You must be signed in.');
-  }
-
-  const { data: sub, error: fetchError } = await supabase
-    .from('subscriptions')
-    .select('*')
-    .eq('id', subscriptionId)
-    .eq('user_id', user.id)
-    .single();
-
-  if (fetchError || !sub) {
-    return err('NOT_FOUND', 'Subscription record not found.');
-  }
-
-  // Update subscription billing mode to manual in database
-  const { error: updateError } = await supabase
-    .from('subscriptions')
-    .update({
-      billing_mode: 'manual',
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', subscriptionId)
-    .eq('user_id', user.id);
-
-  if (updateError) {
-    return err('INTERNAL_ERROR', 'Failed to update subscription settings.');
-  }
-
-  // Cancel recurring mandate on gateway if ID is present
-  if (sub.gateway_subscription_id) {
-    const adapter = getPaymentGatewayAdapter();
-    await adapter.cancelAutoRenew(sub.gateway_subscription_id);
-  }
-
-  revalidatePath('/settings/billing');
-  return ok({ cancelled: true });
 }

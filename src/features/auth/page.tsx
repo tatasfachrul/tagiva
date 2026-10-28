@@ -20,10 +20,20 @@ export interface LoginPageProps {
   }>;
 }
 
+const AUTH_ERROR_MESSAGES: Record<string, string> = {
+  auth_failed: 'Sign-in could not be completed. Please try again.',
+  missing_code: 'Authentication session expired. Please sign in again.',
+  config_missing: 'Authentication service is temporarily unavailable. Please try again later.',
+};
+
 export async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;
   const nextPath = params.next;
   const errorCode = params.error;
+
+  const errorMessage = errorCode
+    ? AUTH_ERROR_MESSAGES[errorCode] ?? 'An error occurred during authentication. Please try again.'
+    : null;
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-slate-50 px-4 py-12">
@@ -41,14 +51,10 @@ export async function LoginPage({ searchParams }: LoginPageProps) {
         </CardHeader>
 
         <CardContent className="space-y-6 pt-0">
-          {errorCode && (
+          {errorMessage && (
             <div className="rounded-lg bg-rose-50 border border-rose-200 p-3 text-center">
               <p className="text-xs text-rose-700 font-medium">
-                {errorCode === 'auth_failed'
-                  ? 'Sign-in could not be completed. Please try again.'
-                  : errorCode === 'config_missing'
-                  ? 'Authentication configuration is missing. Please contact support.'
-                  : 'An error occurred during authentication.'}
+                {errorMessage}
               </p>
             </div>
           )}

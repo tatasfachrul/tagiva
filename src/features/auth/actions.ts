@@ -16,6 +16,14 @@ export async function signInWithGoogleAction(
   targetNext?: string,
 ): Promise<ActionResult<{ url: string }>> {
   try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseKey) {
+      console.error('[Auth Action] Missing Supabase environment variables');
+      return err('INTERNAL_ERROR', 'Authentication service is temporarily unavailable. Please try again later.');
+    }
+
     const supabase = await createClient();
     const headersList = await headers();
     const host = headersList.get('host') || 'localhost:3000';
@@ -36,19 +44,24 @@ export async function signInWithGoogleAction(
       },
     });
 
-    if (error || !data.url) {
-      return err('INTERNAL_ERROR', error?.message || 'Failed to initialize Google Sign-In.');
+    if (error || !data?.url) {
+      console.error('[Auth Action] Failed to initialize Google Sign-In:', error);
+      return err('INTERNAL_ERROR', 'Unable to initialize Google Sign-In. Please try again.');
     }
 
     return ok({ url: data.url });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error during sign-in.';
-    return err('INTERNAL_ERROR', message);
+    console.error('[Auth Action] Unexpected error during Google sign-in:', error);
+    return err('INTERNAL_ERROR', 'Unable to initialize Google Sign-In. Please try again.');
   }
 }
 
 export async function signOutAction(): Promise<void> {
-  const supabase = await createClient();
-  await supabase.auth.signOut();
+  try {
+    const supabase = await createClient();
+    await supabase.auth.signOut();
+  } catch (error) {
+    console.error('[Auth Action] Failed to sign out:', error);
+  }
   redirect('/login');
 }

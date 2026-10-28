@@ -15,7 +15,7 @@ export function useGoogleSignIn(nextPath?: string) {
       const result = await signInWithGoogleAction(nextPath);
 
       if (!result.ok) {
-        setErrorMessage(result.error.message);
+        setErrorMessage(result.error.message || 'Unable to connect to Google Sign-In. Please try again.');
         setIsLoading(false);
         return;
       }
