@@ -1,91 +1,109 @@
-/**
- * Tagiva - Marketing Footer Component (D-58, D-59, D-60)
- */
-
 import React from 'react';
 import Link from 'next/link';
 import { TagivaLogo } from '@/components/layout/tagiva-logo';
 
 export function MarketingFooter() {
   return (
-    <footer className="border-t border-border bg-white">
-      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+    <footer className="w-full bg-[#eff4ff] shadow-[0_1px_8px_rgba(0,0,0,0.02)] border-t border-[#dce9ff] mt-auto">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
           {/* Brand Info */}
-          <div className="flex flex-col gap-3 md:col-span-2">
-            <TagivaLogo size="md" href="/" />
-            <p className="text-xs text-muted-foreground max-w-md leading-relaxed">
-              Modern invoicing for Indonesian freelancers and small businesses. Create, manage, and send professional A4 invoices with PDF generation, shareable client links, and automated numbering.
-            </p>
-            <div className="text-[11px] font-mono text-muted-foreground">
-              Asia/Jakarta (WIB, UTC+07:00) • UU PDP No. 27/2022 compliant
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <TagivaLogo size="sm" href="/" />
             </div>
+            <p className="text-sm text-[#434655] max-w-xs leading-relaxed">
+              Modern, compliant invoicing engineered for Indonesian freelancers, agencies, and agile businesses.
+            </p>
           </div>
 
           {/* Product Links */}
-          <div className="flex flex-col gap-2.5">
-            <h4 className="text-xs font-bold text-foreground">Product</h4>
-            <ul className="flex flex-col gap-2 text-xs text-muted-foreground">
+          <div>
+            <div className="text-sm font-semibold text-[#0b1c30] mb-3">Product</div>
+            <ul className="space-y-2 text-sm text-[#434655]">
               <li>
-                <Link href="/#features" className="hover:text-foreground transition-colors">
-                  Features & Lifecycle
+                <a href="#features" className="hover:text-[#0b1c30] transition-colors">
+                  Overview &amp; Features
+                </a>
+              </li>
+              <li>
+                <Link href="/login?next=/invoices/new" className="hover:text-[#0b1c30] transition-colors">
+                  Live ISO A4 Editor
                 </Link>
               </li>
               <li>
-                <Link href="/#sample" className="hover:text-foreground transition-colors">
-                  A4 Template & Entitlements
+                <a href="#how-it-works" className="hover:text-[#0b1c30] transition-colors">
+                  How It Works
+                </a>
+              </li>
+              <li>
+                <a href="#pricing-matrix" className="hover:text-[#0b1c30] transition-colors">
+                  Plans &amp; Tier Pricing
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Compliance & Legal */}
+          <div>
+            <div className="text-sm font-semibold text-[#0b1c30] mb-3">Compliance &amp; Legal</div>
+            <ul className="space-y-2 text-sm text-[#434655]">
+              <li>
+                <Link href="/privacy" className="hover:text-[#0b1c30] transition-colors">
+                  UU PDP No. 27/2022 Compliance
                 </Link>
               </li>
               <li>
-                <Link href="/pricing" className="hover:text-foreground transition-colors">
-                  Pricing Plans (Rp29k – Rp250k)
+                <Link href="/privacy" className="hover:text-[#0b1c30] transition-colors">
+                  Data Residency &amp; Security
                 </Link>
               </li>
               <li>
-                <Link href="/login" className="hover:text-foreground transition-colors">
-                  Sign in with Google
+                <Link href="/terms" className="hover:text-[#0b1c30] transition-colors">
+                  Terms of Service
+                </Link>
+              </li>
+              <li>
+                <Link href="/privacy" className="hover:text-[#0b1c30] transition-colors">
+                  Privacy Policy
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Legal & Privacy Links (D-58) */}
-          <div className="flex flex-col gap-2.5">
-            <h4 className="text-xs font-bold text-foreground">Legal & Support</h4>
-            <ul className="flex flex-col gap-2 text-xs text-muted-foreground">
+          {/* Resources */}
+          <div>
+            <div className="text-sm font-semibold text-[#0b1c30] mb-3">Resources</div>
+            <ul className="space-y-2 text-sm text-[#434655]">
               <li>
-                <Link href="/terms" className="hover:text-foreground transition-colors">
-                  Terms of Service
-                </Link>
+                <a href="mailto:support@tagiva.com" className="hover:text-[#0b1c30] transition-colors">
+                  Documentation &amp; API
+                </a>
               </li>
               <li>
-                <Link href="/privacy" className="hover:text-foreground transition-colors">
-                  Privacy Policy (UU PDP)
-                </Link>
+                <a href="mailto:support@tagiva.com" className="hover:text-[#0b1c30] transition-colors">
+                  Indonesian Banking Guides
+                </a>
               </li>
               <li>
-                <Link href="/privacy" className="hover:text-foreground transition-colors">
-                  Account Data Deletion (72h SLA)
-                </Link>
-              </li>
-              <li>
-                <a
-                  href="mailto:support@tagiva.com"
-                  className="hover:text-foreground transition-colors font-mono"
-                >
-                  support@tagiva.com
+                <a href="mailto:support@tagiva.com" className="hover:text-[#0b1c30] transition-colors">
+                  Tax Invoice (e-Faktur) Notes
                 </a>
               </li>
             </ul>
           </div>
         </div>
 
-        {/* Bottom copyright line */}
-        <div className="mt-10 border-t border-border pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-muted-foreground gap-2">
-          <p>© 2026 Tagiva (tagiva.com). All rights reserved.</p>
-          <p className="text-[11px] font-mono">
-            Made with Tagiva • tagiva.com
-          </p>
+        {/* Bottom Bar */}
+        <div className="pt-6 border-t border-[#dce9ff] flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-[#434655]">
+          <span>© 2025 PT Tagiva Digital Nusantara. All rights reserved.</span>
+          <div className="flex items-center gap-4">
+            <span className="inline-flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#2e6100]" aria-hidden="true" />
+              <span>ISO A4 Standard Compatible</span>
+            </span>
+            <span>DKI Jakarta, Indonesia</span>
+          </div>
         </div>
       </div>
     </footer>

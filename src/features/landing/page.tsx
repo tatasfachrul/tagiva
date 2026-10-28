@@ -1,16 +1,18 @@
 import React from 'react';
 import { HeroSection } from './components/hero-section';
 import { FeaturesGrid } from './components/features-grid';
-import { TemplateShowcase } from './components/template-showcase';
-import { LandingFaq } from './components/landing-faq';
+import { SocialProofSection } from './components/social-proof-section';
+import { HowItWorksSection } from './components/how-it-works-section';
+import { PricingCtaBanner } from './components/pricing-cta-banner';
 
 export function LandingPage() {
   return (
     <div className="flex flex-col w-full">
       <HeroSection />
       <FeaturesGrid />
-      <TemplateShowcase />
-      <LandingFaq />
+      <SocialProofSection />
+      <HowItWorksSection />
+      <PricingCtaBanner />
     </div>
   );
 }

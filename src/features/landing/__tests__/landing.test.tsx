@@ -2,6 +2,7 @@
  * Tagiva - Landing & Marketing Pages Tests
  *
  * Verifies:
+ * - Redesigned Stitch landing page sections
  * - D-24, D-31, A-22: Unauthenticated landing teaser routes to /login?next=/invoices/new
  * - D-16: Canonical IDR pricing options (Free Rp0, Pro 1m/3m/6m/12m)
  * - D-58: UU PDP No. 27/2022 compliance and 72-hour account deletion SLA
@@ -27,12 +28,15 @@ import { PricingPage, PricingTable } from '@/features/pricing';
 import { PrivacyPage, TermsPage } from '@/features/legal';
 
 describe('Landing & Marketing Pages', () => {
-  it('renders landing page with all hero, teaser, features, and FAQ sections', () => {
+  it('renders landing page with all redesigned hero, value propositions, social proof, workflow, and CTA sections', () => {
     const html = renderToString(<LandingPage />);
     expect(html).toContain('Modern invoicing for Indonesian freelancers and small businesses.');
-    expect(html).toContain('Live Split-Screen Invoice Builder');
-    expect(html).toContain('Sign in with Google');
-    expect(html).toContain('Frequently Asked Questions');
+    expect(html).toContain('Get Started for Free');
+    expect(html).toContain('Why Freelancers &amp; Agencies Choose Tagiva');
+    expect(html).toContain('Create &amp; Send in 3 Simple Steps');
+    expect(html).toContain('Loved by Indonesia’s Independent Talent');
+    expect(html).toContain('Rp 4.2M+');
+    expect(html).toContain('Start invoicing with 3 free slots or upgrade to Pro');
   });
 
   it('renders interactive teaser with default sample data and login CTA gate (D-24, D-31)', () => {

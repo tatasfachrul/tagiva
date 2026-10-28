@@ -30,42 +30,42 @@ export function LandingFaq() {
     <section id="faq" className="deferred-section py-20 bg-slate-50 border-t border-slate-200/80">
       <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-xl mx-auto mb-12">
-          <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-slate-200/60 text-slate-700 mb-3">
+          <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 text-primary mb-3 border border-blue-100">
             <HelpCircle className="h-5 w-5" aria-hidden="true" />
           </div>
-          <h2 className="font-heading text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
             Frequently Asked Questions
           </h2>
-          <p className="mt-2 text-xs sm:text-sm text-slate-500">
+          <p className="mt-2 text-xs sm:text-sm text-muted-foreground">
             Clear answers about pricing, sequence numbering, and Indonesian payments.
           </p>
         </div>
 
-        <div className="divide-y divide-slate-200/80 rounded-xl border border-slate-200 bg-white">
+        <div className="divide-y divide-slate-200/80 rounded-2xl border border-slate-200 bg-white shadow-2xs overflow-hidden">
           {FAQS.map((faq, idx) => (
             <details
               key={idx}
               name="landing-faq"
               open={idx === 0}
-              className="group p-6"
+              className="group p-6 hover:bg-slate-50/50 transition-colors"
             >
-              <summary className="font-heading text-sm font-bold text-slate-900 cursor-pointer select-none">
+              <summary className="text-sm font-bold text-foreground cursor-pointer select-none">
                 {faq.q}
               </summary>
-              <p className="mt-2 text-xs text-slate-600 leading-relaxed">
+              <p className="mt-2 text-xs sm:text-sm text-muted-foreground leading-relaxed">
                 {faq.a}
               </p>
             </details>
           ))}
         </div>
 
-        <div className="mt-8 text-center text-xs text-slate-500">
+        <div className="mt-8 text-center text-xs text-muted-foreground">
           Have more questions? Check our{' '}
-          <Link href="/pricing" className="text-indigo-600 font-semibold hover:underline">
+          <Link href="/pricing" className="text-primary font-semibold hover:underline">
             pricing comparison
           </Link>{' '}
           or contact us at{' '}
-          <a href="mailto:support@tagiva.com" className="text-indigo-600 font-semibold hover:underline">
+          <a href="mailto:support@tagiva.com" className="text-primary font-semibold hover:underline">
             support@tagiva.com
           </a>
           .

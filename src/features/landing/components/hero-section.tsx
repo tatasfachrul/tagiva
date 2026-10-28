@@ -1,82 +1,80 @@
 import React from 'react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { InteractiveTeaser } from './interactive-teaser';
-import { Check, Lock, ShieldCheck, Clock } from 'lucide-react';
+import {
+  CheckCircle2,
+  Lock,
+  ShieldCheck,
+  Clock,
+  ArrowRight,
+  ChevronDown,
+  Edit3,
+} from 'lucide-react';
 
 export function HeroSection() {
   return (
-    <section className="relative bg-background pt-10 pb-16 sm:pt-14 sm:pb-20 border-b border-border">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        {/* Asymmetric Header Block — Left-aligned, grounded in README.md */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end pb-10 border-b border-border/80">
-          <div className="lg:col-span-8 flex flex-col items-start text-left">
-            <div className="inline-flex items-center gap-2 rounded-md border border-border bg-white px-2.5 py-1 text-xs font-medium text-muted-foreground mb-5">
-              <span className="font-mono font-semibold text-foreground">tagiva.com</span>
-              <span className="text-border-strong" aria-hidden="true">
-                |
-              </span>
-              <span>Bilingual (EN | ID) Invoicing SaaS</span>
-              <span className="text-border-strong" aria-hidden="true">
-                |
-              </span>
-              <span className="font-mono text-[11px] text-primary">Asia/Jakarta (WIB)</span>
-            </div>
+    <div className="relative w-full overflow-hidden">
+      {/* Top Ambient Glow */}
+      <div
+        className="absolute -top-40 left-1/2 -translate-x-1/2 w-[1000px] h-[420px] bg-gradient-to-b from-[#dbe1ff]/60 via-[#e5eeff]/20 to-transparent blur-3xl pointer-events-none rounded-full"
+        aria-hidden="true"
+      />
 
-            <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-foreground leading-[1.12] max-w-[26ch]">
+      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 md:pt-16 pb-12">
+        {/* Asymmetric Header Block */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end mb-12">
+          <div className="lg:col-span-8 flex flex-col items-start text-left">
+            <h1 className="text-4xl sm:text-5xl lg:text-[54px] font-bold tracking-tight text-[#0b1c30] leading-[1.12] text-balance">
               Modern invoicing for Indonesian freelancers and small businesses.
             </h1>
 
-            <p className="mt-4 max-w-[65ch] text-sm sm:text-base text-muted-foreground leading-relaxed">
-              Create, manage, and send professional A4 invoices with PDF generation, shareable client links, and automated numbering. Sign in with Google, configure your business profile and bank transfer details, and generate clean, print-ready invoices in minutes without spreadsheets or complex accounting software.
+            <p className="mt-5 text-base sm:text-lg text-[#434655] leading-relaxed max-w-2xl text-pretty">
+              Create, manage, and send compliant ISO A4 invoices with zero latency. Built with atomic sequence guarantees, PPN 11% automation, seamless Bank Transfer instructions (BCA, Mandiri, BRI), and one-click shareable payment tokens.
             </p>
           </div>
 
-          <div className="lg:col-span-4 flex flex-col sm:flex-row lg:flex-col items-stretch sm:items-center lg:items-end justify-end gap-3">
-            <Button
-              asChild
-              size="lg"
-              className="font-semibold h-11 px-6 shadow-xs w-full sm:w-auto"
+          <div className="lg:col-span-4 flex flex-col sm:flex-row lg:flex-col gap-3 justify-end w-full sm:w-auto">
+            <Link
+              href="/login?next=/invoices/new"
+              className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-xl bg-[#2563eb] hover:bg-[#004ac6] text-white font-semibold shadow-sm transition-all active:scale-[0.99] group text-sm"
             >
-              <Link href="/login?next=/invoices/new">Sign in with Google</Link>
-            </Button>
+              <Edit3 className="size-4" aria-hidden="true" />
+              <span>Get Started for Free</span>
+              <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+            </Link>
 
-            <Button
-              asChild
-              variant="outline"
-              size="lg"
-              className="h-11 px-6 w-full sm:w-auto font-medium"
+            <a
+              href="#pricing-matrix"
+              className="inline-flex items-center justify-center gap-1.5 h-12 px-6 rounded-xl bg-[#e5eeff] hover:bg-[#dce9ff] text-[#0b1c30] font-medium text-sm transition-colors"
             >
-              <Link href="/pricing">View Pricing (From Rp29.000 / 1m)</Link>
-            </Button>
+              <span>View Pricing (From Rp29.000 / 1m)</span>
+              <ChevronDown className="size-4 text-[#434655]" aria-hidden="true" />
+            </a>
           </div>
         </div>
 
-        {/* System Guardrails & Specifications Strip */}
-        <div className="py-4 flex flex-wrap items-center justify-between gap-4 text-xs text-muted-foreground border-b border-border/60 mb-8">
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-            <span className="inline-flex items-center gap-1.5 font-medium text-foreground">
-              <Check className="size-3.5 text-tagiva-green shrink-0" aria-hidden="true" />
-              Free tier: 3 saved invoices in total
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Lock className="size-3.5 text-primary shrink-0" aria-hidden="true" />
-              Google OAuth PKCE (No guest trackers)
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <ShieldCheck className="size-3.5 text-primary shrink-0" aria-hidden="true" />
-              UU PDP No. 27/2022 compliant
-            </span>
+        {/* Trust Badges Strip */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-6 border-t border-[#dce9ff]">
+          <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-white shadow-sm border border-[#e5eeff]">
+            <CheckCircle2 className="size-5 text-[#2563eb] shrink-0" aria-hidden="true" />
+            <span className="text-xs font-semibold text-[#0b1c30]">3 Invoices Free Forever</span>
           </div>
-          <div className="inline-flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground">
-            <Clock className="size-3.5 text-muted-foreground shrink-0" aria-hidden="true" />
-            <span>Drafts render [DRAFT] until issued via atomic RPC</span>
+
+          <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-white shadow-sm border border-[#e5eeff]">
+            <Lock className="size-5 text-[#2563eb] shrink-0" aria-hidden="true" />
+            <span className="text-xs font-semibold text-[#0b1c30]">Google OAuth PKCE Auth</span>
+          </div>
+
+          <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-white shadow-sm border border-[#e5eeff]">
+            <ShieldCheck className="size-5 text-[#2e6100] shrink-0" aria-hidden="true" />
+            <span className="text-xs font-semibold text-[#0b1c30]">UU PDP No. 27/2022 Ready</span>
+          </div>
+
+          <div className="flex items-center gap-2.5 p-3.5 rounded-xl bg-white shadow-sm border border-[#e5eeff]">
+            <Clock className="size-5 text-[#434655] shrink-0" aria-hidden="true" />
+            <span className="text-xs font-semibold text-[#0b1c30]">Atomic Sequence Engine</span>
           </div>
         </div>
-
-        {/* Dominant Feature: Live Split-Screen Invoice Builder & Real-Time A4 Sheet */}
-        <InteractiveTeaser />
-      </div>
-    </section>
+      </section>
+    </div>
   );
 }
