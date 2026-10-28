@@ -6,11 +6,13 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { TagivaLogo } from '@/components/layout/tagiva-logo';
 import { Menu, X } from 'lucide-react';
 
 export function MarketingHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white/90 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.04)] border-b border-[#e5eeff] transition-all">
@@ -22,30 +24,32 @@ export function MarketingHeader() {
             aria-label="Primary"
             className="hidden md:flex items-center gap-6 text-sm font-medium text-[#434655]"
           >
-            <a
-              href="#features"
-              className="text-[#004ac6] font-semibold transition-colors py-1 px-2 rounded"
+            <Link
+              href="/#features"
+              className="hover:text-[#0b1c30] transition-colors py-1 px-2 rounded"
             >
               Features
-            </a>
-            <a
-              href="#how-it-works"
+            </Link>
+            <Link
+              href="/#how-it-works"
               className="hover:text-[#0b1c30] transition-colors py-1 px-2 rounded"
             >
               How It Works
-            </a>
-            <a
-              href="#testimonials"
+            </Link>
+            <Link
+              href="/#testimonials"
               className="hover:text-[#0b1c30] transition-colors py-1 px-2 rounded"
             >
               Stories
-            </a>
-            <a
-              href="#pricing-matrix"
-              className="hover:text-[#0b1c30] transition-colors py-1 px-2 rounded"
+            </Link>
+            <Link
+              href="/pricing"
+              className={`transition-colors py-1 px-2 rounded ${
+                pathname === '/pricing' ? 'text-[#004ac6] font-semibold' : 'hover:text-[#0b1c30]'
+              }`}
             >
               Pricing
-            </a>
+            </Link>
           </nav>
         </div>
 
@@ -92,34 +96,36 @@ export function MarketingHeader() {
       {mobileMenuOpen && (
         <div className="border-b border-[#e5eeff] bg-white px-4 py-4 sm:hidden flex flex-col gap-3">
           <nav className="flex flex-col gap-2.5 text-sm font-medium text-[#0b1c30]">
-            <a
-              href="#features"
+            <Link
+              href="/#features"
               onClick={() => setMobileMenuOpen(false)}
-              className="py-1 text-[#004ac6] font-semibold"
+              className="py-1 hover:text-[#004ac6]"
             >
               Features
-            </a>
-            <a
-              href="#how-it-works"
+            </Link>
+            <Link
+              href="/#how-it-works"
               onClick={() => setMobileMenuOpen(false)}
               className="py-1 hover:text-[#004ac6]"
             >
               How It Works
-            </a>
-            <a
-              href="#testimonials"
+            </Link>
+            <Link
+              href="/#testimonials"
               onClick={() => setMobileMenuOpen(false)}
               className="py-1 hover:text-[#004ac6]"
             >
               Stories
-            </a>
-            <a
-              href="#pricing-matrix"
+            </Link>
+            <Link
+              href="/pricing"
               onClick={() => setMobileMenuOpen(false)}
-              className="py-1 hover:text-[#004ac6]"
+              className={`py-1 ${
+                pathname === '/pricing' ? 'text-[#004ac6] font-semibold' : 'hover:text-[#004ac6]'
+              }`}
             >
               Pricing
-            </a>
+            </Link>
           </nav>
           <div className="pt-3 border-t border-[#e5eeff] flex items-center justify-between gap-2">
             <div className="inline-flex items-center p-0.5 rounded-full bg-[#e5eeff]">

@@ -78,17 +78,17 @@ describe('Landing & Marketing Pages', () => {
 
   it('renders privacy policy with explicit UU PDP No. 27/2022 and 72-hour SLA (D-58)', () => {
     const html = renderToString(<PrivacyPage />);
-    expect(html).toContain('UU No. 27 Tahun 2022');
+    expect(html).toContain('UU No. 27 of 2022');
     expect(html).toContain('support@tagiva.com');
-    expect(html).toContain('72 jam');
-    expect(html).toContain('Permohonan Penghapusan Data Pribadi');
+    expect(html).toContain('72 hours');
+    expect(html).toContain('Request for Personal Data Deletion');
   });
 
   it('renders terms of service with plan rules and disclaimer', () => {
     const html = renderToString(<TermsPage />);
-    expect(html).toContain('Syarat dan Ketentuan Layanan');
-    expect(html).toContain('Paket Free Starter');
-    expect(html).toContain('Paket Pro');
+    expect(html).toContain('Terms of Service');
+    expect(html).toContain('Free Starter Plan');
+    expect(html).toContain('Pro Plan');
     expect(html).toContain('support@tagiva.com');
   });
 });
