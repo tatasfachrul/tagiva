@@ -22,8 +22,11 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
   }, [error]);
 
   return (
-    <html lang="en">
-      <body className="min-h-screen w-full flex items-center justify-center bg-slate-50 px-4 py-12 font-sans antialiased">
+    <html lang="en" suppressHydrationWarning>
+      <body
+        suppressHydrationWarning
+        className="min-h-screen w-full flex items-center justify-center bg-slate-50 px-4 py-12 font-sans antialiased"
+      >
         <div className="w-full max-w-md bg-white border border-slate-200/80 shadow-sm rounded-xl p-8 text-center space-y-4">
           <div className="flex justify-center">
             <TagivaLogo size="lg" className="rounded-xl shadow-xs" />

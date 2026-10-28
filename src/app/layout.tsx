@@ -39,9 +39,13 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${fontSans.variable} ${fontInvoice.variable} ${fontMono.variable}`}
     >
-      <body className="min-h-screen bg-background text-foreground antialiased font-sans">
+      <body
+        suppressHydrationWarning
+        className="min-h-screen bg-background text-foreground antialiased font-sans"
+      >
         {children}
         <Toaster position="top-right" richColors closeButton />
       </body>
