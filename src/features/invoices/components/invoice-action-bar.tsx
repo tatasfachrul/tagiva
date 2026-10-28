@@ -42,16 +42,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import {
-  issueInvoiceAction,
-  updateInvoiceStatusAction,
-  deleteInvoiceAction,
-} from '../actions';
+import { useInvoiceMutations } from '../hooks/use-invoice-mutations';
 import { ShareLinkModal } from './share-link-modal';
 import { SendEmailModal } from './send-email-modal';
 import type { InvoiceStatus } from '@/lib/domain/status';
 import type { UserPlanState } from '@/lib/domain/entitlements';
-import { toast } from 'sonner';
 
 interface InvoiceActionBarProps {
   invoiceId?: string;
@@ -81,9 +76,15 @@ export function InvoiceActionBar({
   isSaving = false,
 }: InvoiceActionBarProps) {
   const router = useRouter();
-  const [isIssuing, setIsIssuing] = useState(false);
-  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const {
+    isIssuing,
+    isUpdatingStatus,
+    isDeleting,
+    issueInvoice,
+    updateStatus,
+    deleteInvoice,
+  } = useInvoiceMutations();
+
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
   const [shareModalOpen, setShareModalOpen] = useState(false);
@@ -100,59 +101,20 @@ export function InvoiceActionBar({
   // Handle Issue Invoice
   async function handleIssue() {
     if (!invoiceId) return;
-    setIsIssuing(true);
-    try {
-      const res = await issueInvoiceAction({ invoiceId });
-      if (res.ok) {
-        toast.success(`Invoice issued successfully: ${res.data.invoiceNumber}`);
-        router.refresh();
-      } else {
-        toast.error(res.error.message);
-      }
-    } catch {
-      toast.error('Failed to issue invoice.');
-    } finally {
-      setIsIssuing(false);
-    }
+    await issueInvoice({ invoiceId });
   }
 
   // Handle Mark as Paid
   async function handleStatusChange(targetStatus: 'sent' | 'paid') {
     if (!invoiceId) return;
-    setIsUpdatingStatus(true);
-    try {
-      const res = await updateInvoiceStatusAction({ invoiceId, targetStatus });
-      if (res.ok) {
-        toast.success(
-          targetStatus === 'paid' ? 'Marked as Paid!' : 'Status reverted to Sent.',
-        );
-        router.refresh();
-      } else {
-        toast.error(res.error.message);
-      }
-    } catch {
-      toast.error('Failed to update status.');
-    } finally {
-      setIsUpdatingStatus(false);
-    }
+    await updateStatus({ invoiceId, targetStatus });
   }
 
   // Handle Delete Invoice
   async function handleDelete() {
     if (!invoiceId) return;
-    setIsDeleting(true);
-    try {
-      const res = await deleteInvoiceAction({ invoiceId });
-      if (res.ok) {
-        toast.success('Invoice deleted.');
-        router.push('/dashboard');
-      } else {
-        toast.error(res.error.message);
-      }
-    } catch {
-      toast.error('Failed to delete invoice.');
-    } finally {
-      setIsDeleting(false);
+    const res = await deleteInvoice({ invoiceId });
+    if (res.ok) {
       setDeleteDialogOpen(false);
     }
   }

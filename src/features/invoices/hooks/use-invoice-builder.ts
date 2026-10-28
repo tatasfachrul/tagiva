@@ -13,11 +13,10 @@
  */
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { calculateInvoiceTotals, type DiscountType } from '@/lib/domain/calculations';
 import { getTodayWibString, addDaysWib } from '@/lib/domain/timezone';
-import { saveInvoiceDraftAction } from '../actions';
+import { useInvoiceMutations } from './use-invoice-mutations';
 import type {
   InvoiceBuilderFormValues,
   InvoiceBuilderItem,
@@ -39,8 +38,7 @@ export function useInvoiceBuilder({
   profile,
   planState,
 }: UseInvoiceBuilderProps) {
-  const router = useRouter();
-  const [isSaving, setIsSaving] = useState(false);
+  const { saveDraft: mutateSaveDraft, isSaving } = useInvoiceMutations();
 
   // Initial values setup
   const todayWib = getTodayWibString();
@@ -259,65 +257,47 @@ export function useInvoiceBuilder({
     }));
   }, []);
 
-  // Save Draft Action
+  // Save Draft Action (delegated to useInvoiceMutations)
   const saveDraft = useCallback(async () => {
-    setIsSaving(true);
-    try {
-      const res = await saveInvoiceDraftAction({
-        id: values.id,
-        customerId: values.customerId,
-        saveCustomerToDirectory: values.saveCustomerToDirectory,
-        language: values.language,
-        currency: values.currency,
-        issueDate: values.issueDate,
-        dueDate: values.dueDate,
-        sender: {
-          name: values.senderName,
-          email: values.senderEmail,
-          phone: values.senderPhone,
-          address: values.senderAddress,
-          taxId: values.senderTaxId,
-          paymentInstructions: {
-            bankName: values.bankName,
-            accountNumber: values.accountNumber,
-            accountHolder: values.accountHolder,
-            notes: values.bankNotes,
-          },
+    await mutateSaveDraft({
+      id: values.id,
+      customerId: values.customerId,
+      saveCustomerToDirectory: values.saveCustomerToDirectory,
+      language: values.language,
+      currency: values.currency,
+      issueDate: values.issueDate,
+      dueDate: values.dueDate,
+      sender: {
+        name: values.senderName,
+        email: values.senderEmail,
+        phone: values.senderPhone,
+        address: values.senderAddress,
+        taxId: values.senderTaxId,
+        paymentInstructions: {
+          bankName: values.bankName,
+          accountNumber: values.accountNumber,
+          accountHolder: values.accountHolder,
+          notes: values.bankNotes,
         },
-        client: {
-          name: values.clientName,
-          company: values.clientCompany,
-          email: values.clientEmail,
-          address: values.clientAddress,
-        },
-        items: values.items.map((i) => ({
-          description: i.description || 'Item description',
-          quantity: i.quantity,
-          unitPrice: i.unitPrice,
-        })),
-        discountType: values.discountType,
-        discountValue: values.discountValue,
-        taxLabel: values.taxLabel,
-        taxRate: values.taxRate,
-        notes: values.notes,
-      });
-
-      if (res.ok) {
-        toast.success('Invoice draft saved successfully!');
-        if (!values.id) {
-          router.push(`/invoices/${res.data.invoiceId}`);
-        } else {
-          router.refresh();
-        }
-      } else {
-        toast.error(res.error.message);
-      }
-    } catch {
-      toast.error('An unexpected error occurred while saving.');
-    } finally {
-      setIsSaving(false);
-    }
-  }, [values, router]);
+      },
+      client: {
+        name: values.clientName,
+        company: values.clientCompany,
+        email: values.clientEmail,
+        address: values.clientAddress,
+      },
+      items: values.items.map((i) => ({
+        description: i.description || 'Item description',
+        quantity: i.quantity,
+        unitPrice: i.unitPrice,
+      })),
+      discountType: values.discountType,
+      discountValue: values.discountValue,
+      taxLabel: values.taxLabel,
+      taxRate: values.taxRate,
+      notes: values.notes,
+    });
+  }, [values, mutateSaveDraft]);
 
   return {
     values,

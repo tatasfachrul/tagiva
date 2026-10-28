@@ -8,6 +8,7 @@ export * from './email-actions';
 export * from './share-actions';
 export * from './queries/invoice-queries';
 export * from './hooks/use-invoice-builder';
+export * from './hooks/use-invoice-mutations';
 export * from './components/invoice-builder';
 export * from './components/invoice-action-bar';
 export * from './components/share-link-modal';

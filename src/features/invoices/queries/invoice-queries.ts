@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { resolveEffectiveInvoiceStatus } from '@/lib/domain/status';
-import type { UserPlanState } from '@/lib/domain/entitlements';
+import { InvoiceService } from '@/services/invoice-service';
 import type { InvoiceDetailPageData, ClientOption } from '../types';
 
 /**
@@ -18,48 +18,24 @@ export async function getInvoiceById(invoiceId: string): Promise<InvoiceDetailPa
     return null;
   }
 
-  // 1. Fetch invoice row
-  const { data: invoice, error: invoiceError } = await supabase
-    .from('invoices')
-    .select('*')
-    .eq('id', invoiceId)
-    .eq('user_id', user.id)
-    .single();
-
-  if (invoiceError || !invoice) {
+  // 1. Fetch invoice row and line items via InvoiceService
+  const invoiceData = await InvoiceService.getInvoiceWithItems(invoiceId, user.id, supabase);
+  if (!invoiceData) {
     return null;
   }
+  const { invoice, items } = invoiceData;
 
-  // 2. Fetch invoice items
-  const { data: items, error: itemsError } = await supabase
-    .from('invoice_items')
-    .select('*')
-    .eq('invoice_id', invoiceId)
-    .order('sort_order', { ascending: true })
-    .order('id', { ascending: true });
-
-  if (itemsError) {
-    return null;
-  }
-
-  // 3. Fetch user profile
+  // 2. Fetch user profile
   const { data: profile } = await supabase
     .from('profiles')
     .select('*')
     .eq('user_id', user.id)
     .single();
 
-  // 4. Resolve plan state
-  const { data: planStateRaw } = await (
-    supabase.rpc as unknown as (
-      fn: string,
-      args: { p_user_id: string },
-    ) => Promise<{ data: UserPlanState | null; error: unknown }>
-  )('get_user_plan_state', { p_user_id: user.id });
+  // 3. Resolve plan state via InvoiceService
+  const planState = await InvoiceService.getUserPlanState(user.id, supabase);
 
-  const planState: UserPlanState = planStateRaw || 'free';
-
-  // 5. Evaluate effective status (e.g. sent -> overdue if due_date < today in WIB)
+  // 4. Evaluate effective status (e.g. sent -> overdue if due_date < today in WIB)
   const effectiveStatus = resolveEffectiveInvoiceStatus(invoice.status, invoice.due_date);
   const invoiceWithEffectiveStatus = {
     ...invoice,
@@ -67,7 +43,7 @@ export async function getInvoiceById(invoiceId: string): Promise<InvoiceDetailPa
     items: items ?? [],
   };
 
-  // 6. Compute action permissions
+  // 5. Compute action permissions
   const isLapsed = planState === 'lapsed';
   const isReadOnly = isLapsed; // D-23, D-28: Lapsed is read-only on existing invoices
   const canMarkAsPaid = effectiveStatus === 'sent' || effectiveStatus === 'overdue';

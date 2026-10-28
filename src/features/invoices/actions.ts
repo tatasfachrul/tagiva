@@ -10,6 +10,8 @@
  * - deleteInvoiceAction (D-21, D-28, D-29, A-12)
  * - duplicateInvoiceAction (D-12, D-33)
  * - createOrTogglePublicLinkAction (FR-8, D-11, D-40)
+ *
+ * Delegated to InvoiceService (src/services/invoice-service.ts) for decoupled database operations.
  */
 
 import crypto from 'crypto';
@@ -22,7 +24,6 @@ import {
   canEditInvoice,
   canChangeStatus,
   canUseProFeature,
-  type UserPlanState,
 } from '@/lib/domain/entitlements';
 import { getTodayWibString, addDaysWib } from '@/lib/domain/timezone';
 import {
@@ -45,20 +46,7 @@ import {
   validationError,
   type ActionResult,
 } from '@/lib/api/action-result';
-
-/**
- * Helper to fetch plan state for authenticated user.
- */
-async function resolvePlanState(supabase: Awaited<ReturnType<typeof createClient>>, userId: string): Promise<UserPlanState> {
-  const { data: planStateRaw } = await (
-    supabase.rpc as unknown as (
-      fn: string,
-      args: { p_user_id: string },
-    ) => Promise<{ data: UserPlanState | null; error: unknown }>
-  )('get_user_plan_state', { p_user_id: userId });
-
-  return planStateRaw || 'free';
-}
+import { InvoiceService } from '@/services/invoice-service';
 
 /**
  * Creates or updates an invoice draft.
@@ -87,7 +75,7 @@ export async function saveInvoiceDraftAction(
       return err('UNAUTHENTICATED', 'You must be signed in to save an invoice.');
     }
 
-    const planState = await resolvePlanState(supabase, user.id);
+    const planState = await InvoiceService.getUserPlanState(user.id, supabase);
 
     // 1. Deterministic Server-Side Money Calculations (NFR-4)
     const calcResult = calculateInvoiceTotals({
@@ -101,16 +89,18 @@ export async function saveInvoiceDraftAction(
       taxRate: input.taxRate,
     });
 
+    const itemsToPersist = calcResult.items.map((item) => ({
+      description: item.description,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      lineTotal: item.lineTotal,
+    }));
+
     // 2. If Updating Existing Invoice (input.id exists)
     if (input.id) {
-      const { data: existing, error: fetchError } = await supabase
-        .from('invoices')
-        .select('*')
-        .eq('id', input.id)
-        .eq('user_id', user.id)
-        .single();
+      const existing = await InvoiceService.getInvoiceById(input.id, user.id, supabase);
 
-      if (fetchError || !existing) {
+      if (!existing) {
         return err('NOT_FOUND', 'Invoice not found.');
       }
 
@@ -124,22 +114,23 @@ export async function saveInvoiceDraftAction(
 
       // If client requested saving customer to directory
       if (input.saveCustomerToDirectory && input.client.name) {
-        await supabase.from('customers').upsert(
+        await InvoiceService.upsertCustomer(
+          user.id,
           {
-            user_id: user.id,
             name: input.client.name,
             company: input.client.company,
             email: input.client.email,
             address: input.client.address,
           },
-          { onConflict: 'user_id,email' },
+          supabase,
         );
       }
 
       // Update invoice row - never overwrite sequence number or status! (D-55)
-      const { error: updateError } = await supabase
-        .from('invoices')
-        .update({
+      await InvoiceService.updateInvoice(
+        input.id,
+        user.id,
+        {
           customer_id: input.customerId ?? null,
           language: input.language,
           currency: input.currency,
@@ -165,28 +156,10 @@ export async function saveInvoiceDraftAction(
           total_amount: calcResult.totalAmount,
           notes: input.notes,
           updated_at: new Date().toISOString(),
-        })
-        .eq('id', input.id)
-        .eq('user_id', user.id);
-
-      if (updateError) {
-        console.error('Failed to update invoice:', updateError);
-        return err('INTERNAL_ERROR', 'Failed to update invoice. Please try again.');
-      }
-
-      // Replace items
-      await supabase.from('invoice_items').delete().eq('invoice_id', input.id);
-
-      const itemsToInsert = calcResult.items.map((item, idx) => ({
-        invoice_id: input.id!,
-        description: item.description,
-        quantity: item.quantity,
-        unit_price: item.unitPrice,
-        line_total: item.lineTotal,
-        sort_order: idx + 1,
-      }));
-
-      await supabase.from('invoice_items').insert(itemsToInsert);
+        },
+        itemsToPersist,
+        supabase,
+      );
 
       revalidatePath('/dashboard');
       revalidatePath(`/invoices/${input.id}`);
@@ -195,12 +168,7 @@ export async function saveInvoiceDraftAction(
     }
 
     // 3. If Creating New Invoice (!input.id)
-    const { count } = await supabase
-      .from('invoices')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', user.id);
-
-    const currentCount = count ?? 0;
+    const currentCount = await InvoiceService.countUserInvoices(user.id, supabase);
 
     // Enforce Free 3-invoice cap (D-12, D-33, TC-ENT-02, TC-ENT-09)
     if (!canCreateInvoice(planState, currentCount)) {
@@ -213,41 +181,30 @@ export async function saveInvoiceDraftAction(
     // Snapshot logo only for Pro users (D-27, A-23)
     let logoUrlSnapshot: string | null = null;
     if (planState === 'pro') {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('logo_url')
-        .eq('user_id', user.id)
-        .single();
-      logoUrlSnapshot = profile?.logo_url ?? null;
+      logoUrlSnapshot = await InvoiceService.getUserLogo(user.id, supabase);
     }
 
     // Optional: save customer to directory
     let assignedCustomerId = input.customerId ?? null;
     if (input.saveCustomerToDirectory && input.client.name) {
-      const { data: newCustomer } = await supabase
-        .from('customers')
-        .upsert(
-          {
-            user_id: user.id,
-            name: input.client.name,
-            company: input.client.company,
-            email: input.client.email,
-            address: input.client.address,
-          },
-          { onConflict: 'user_id,email' },
-        )
-        .select('id')
-        .single();
-
-      if (newCustomer) {
-        assignedCustomerId = newCustomer.id;
+      const customerId = await InvoiceService.upsertCustomer(
+        user.id,
+        {
+          name: input.client.name,
+          company: input.client.company,
+          email: input.client.email,
+          address: input.client.address,
+        },
+        supabase,
+      );
+      if (customerId) {
+        assignedCustomerId = customerId;
       }
     }
 
     // Insert Draft Invoice (D-30: status = 'draft', invoice_number = NULL)
-    const { data: newInvoice, error: insertError } = await supabase
-      .from('invoices')
-      .insert({
+    const newInvoice = await InvoiceService.createDraftInvoice(
+      {
         user_id: user.id,
         customer_id: assignedCustomerId,
         template_id: 'modern-minimalist',
@@ -277,26 +234,10 @@ export async function saveInvoiceDraftAction(
         tax_amount: calcResult.taxAmount,
         total_amount: calcResult.totalAmount,
         notes: input.notes,
-      })
-      .select('id, status')
-      .single();
-
-    if (insertError || !newInvoice) {
-      console.error('Failed to create invoice draft:', insertError);
-      return err('INTERNAL_ERROR', 'Failed to create invoice draft. Please try again.');
-    }
-
-    // Insert Line Items
-    const itemsToInsert = calcResult.items.map((item, idx) => ({
-      invoice_id: newInvoice.id,
-      description: item.description,
-      quantity: item.quantity,
-      unit_price: item.unitPrice,
-      line_total: item.lineTotal,
-      sort_order: idx + 1,
-    }));
-
-    await supabase.from('invoice_items').insert(itemsToInsert);
+      },
+      itemsToPersist,
+      supabase,
+    );
 
     revalidatePath('/dashboard');
     revalidatePath(`/invoices/${newInvoice.id}`);
@@ -332,14 +273,9 @@ export async function issueInvoiceAction(
     }
 
     // Verify ownership and draft status
-    const { data: invoice, error: fetchError } = await supabase
-      .from('invoices')
-      .select('id, status, invoice_number')
-      .eq('id', invoiceId)
-      .eq('user_id', user.id)
-      .single();
+    const invoice = await InvoiceService.getInvoiceById(invoiceId, user.id, supabase);
 
-    if (fetchError || !invoice) {
+    if (!invoice) {
       return err('NOT_FOUND', 'Invoice not found.');
     }
 
@@ -350,21 +286,8 @@ export async function issueInvoiceAction(
       );
     }
 
-    // Call Atomic issue_invoice RPC (D-56)
-    const { data: issuedNumber, error: rpcError } = await (
-      supabase.rpc as unknown as (
-        fn: string,
-        args: { p_invoice_id: string },
-      ) => Promise<{ data: string | null; error: { message: string } | null }>
-    )('issue_invoice', { p_invoice_id: invoiceId });
-
-    if (rpcError || !issuedNumber) {
-      console.error('Failed to issue invoice sequence number:', rpcError);
-      return err(
-        'INTERNAL_ERROR',
-        'Failed to issue invoice sequence number. Please try again.',
-      );
-    }
+    // Call Atomic issue_invoice RPC via service (D-56)
+    const issuedNumber = await InvoiceService.issueInvoice(invoiceId, supabase);
 
     revalidatePath('/dashboard');
     revalidatePath(`/invoices/${invoiceId}`);
@@ -403,23 +326,17 @@ export async function updateInvoiceStatusAction(
       return err('UNAUTHENTICATED', 'You must be signed in.');
     }
 
-    const { data: invoice, error: fetchError } = await supabase
-      .from('invoices')
-      .select('*')
-      .eq('id', invoiceId)
-      .eq('user_id', user.id)
-      .single();
+    const invoice = await InvoiceService.getInvoiceById(invoiceId, user.id, supabase);
 
-    if (fetchError || !invoice) {
+    if (!invoice) {
       return err('NOT_FOUND', 'Invoice not found.');
     }
 
-    const planState = await resolvePlanState(supabase, user.id);
+    const planState = await InvoiceService.getUserPlanState(user.id, supabase);
 
     // Validate status transition permissions
     const transitionCheck = canChangeStatus(planState, invoice.status, targetStatus);
     if (!transitionCheck.allowed) {
-      // If Lapsed user attempted disallowed action
       if (planState === 'lapsed') {
         return err('LAPSED_READ_ONLY', transitionCheck.error ?? 'Action not permitted for lapsed account.');
       }
@@ -427,20 +344,13 @@ export async function updateInvoiceStatusAction(
     }
 
     const isPaid = targetStatus === 'paid';
-    const { error: updateError } = await supabase
-      .from('invoices')
-      .update({
-        status: targetStatus,
-        paid_at: isPaid ? new Date().toISOString() : null,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', invoiceId)
-      .eq('user_id', user.id);
-
-    if (updateError) {
-      console.error('Failed to update invoice status:', updateError);
-      return err('INTERNAL_ERROR', 'Failed to update invoice status. Please try again.');
-    }
+    await InvoiceService.updateInvoiceStatus(
+      invoiceId,
+      user.id,
+      targetStatus,
+      isPaid ? new Date().toISOString() : null,
+      supabase,
+    );
 
     revalidatePath('/dashboard');
     revalidatePath(`/invoices/${invoiceId}`);
@@ -478,18 +388,13 @@ export async function deleteInvoiceAction(
       return err('UNAUTHENTICATED', 'You must be signed in.');
     }
 
-    const { data: invoice, error: fetchError } = await supabase
-      .from('invoices')
-      .select('id, status')
-      .eq('id', invoiceId)
-      .eq('user_id', user.id)
-      .single();
+    const invoice = await InvoiceService.getInvoiceById(invoiceId, user.id, supabase);
 
-    if (fetchError || !invoice) {
+    if (!invoice) {
       return err('NOT_FOUND', 'Invoice not found.');
     }
 
-    const planState = await resolvePlanState(supabase, user.id);
+    const planState = await InvoiceService.getUserPlanState(user.id, supabase);
 
     if (planState === 'lapsed') {
       return err('LAPSED_READ_ONLY', 'Existing invoices cannot be deleted on lapsed accounts.');
@@ -506,16 +411,7 @@ export async function deleteInvoiceAction(
       return err('DELETE_NOT_ALLOWED_ON_FREE', 'You are not permitted to delete this invoice.');
     }
 
-    const { error: deleteError } = await supabase
-      .from('invoices')
-      .delete()
-      .eq('id', invoiceId)
-      .eq('user_id', user.id);
-
-    if (deleteError) {
-      console.error('Failed to delete invoice:', deleteError);
-      return err('INTERNAL_ERROR', 'Failed to delete invoice. Please try again.');
-    }
+    await InvoiceService.deleteInvoice(invoiceId, user.id, supabase);
 
     revalidatePath('/dashboard');
 
@@ -549,32 +445,17 @@ export async function duplicateInvoiceAction(
       return err('UNAUTHENTICATED', 'You must be signed in.');
     }
 
-    // Fetch source invoice and items
-    const { data: source, error: sourceError } = await supabase
-      .from('invoices')
-      .select('*')
-      .eq('id', invoiceId)
-      .eq('user_id', user.id)
-      .single();
+    const sourceData = await InvoiceService.getInvoiceWithItems(invoiceId, user.id, supabase);
 
-    if (sourceError || !source) {
+    if (!sourceData) {
       return err('NOT_FOUND', 'Source invoice not found.');
     }
 
-    const { data: sourceItems } = await supabase
-      .from('invoice_items')
-      .select('*')
-      .eq('invoice_id', invoiceId)
-      .order('sort_order', { ascending: true });
+    const { invoice: source, items: sourceItems } = sourceData;
+    const planState = await InvoiceService.getUserPlanState(user.id, supabase);
+    const count = await InvoiceService.countUserInvoices(user.id, supabase);
 
-    const planState = await resolvePlanState(supabase, user.id);
-
-    const { count } = await supabase
-      .from('invoices')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', user.id);
-
-    if (!canCreateInvoice(planState, count ?? 0)) {
+    if (!canCreateInvoice(planState, count)) {
       return err(
         'PLAN_LIMIT_REACHED',
         'Cannot duplicate: 3-invoice limit reached. Upgrade to Pro for unlimited invoices.',
@@ -588,9 +469,15 @@ export async function duplicateInvoiceAction(
     // Logo snapshot only if Pro (A-23)
     const logoUrlSnapshot = planState === 'pro' ? source.logo_url : null;
 
-    const { data: newInvoice, error: createError } = await supabase
-      .from('invoices')
-      .insert({
+    const itemsToInsert = sourceItems.map((item) => ({
+      description: item.description,
+      quantity: item.quantity,
+      unitPrice: item.unit_price,
+      lineTotal: item.line_total,
+    }));
+
+    const newInvoice = await InvoiceService.createDraftInvoice(
+      {
         user_id: user.id,
         customer_id: source.customer_id,
         template_id: source.template_id,
@@ -620,26 +507,10 @@ export async function duplicateInvoiceAction(
         tax_amount: source.tax_amount,
         total_amount: source.total_amount,
         notes: source.notes,
-      })
-      .select('id')
-      .single();
-
-    if (createError || !newInvoice) {
-      console.error('Failed to duplicate invoice:', createError);
-      return err('INTERNAL_ERROR', 'Failed to duplicate invoice. Please try again.');
-    }
-
-    if (sourceItems && sourceItems.length > 0) {
-      const itemsToInsert = sourceItems.map((item, idx) => ({
-        invoice_id: newInvoice.id,
-        description: item.description,
-        quantity: item.quantity,
-        unit_price: item.unit_price,
-        line_total: item.line_total,
-        sort_order: idx + 1,
-      }));
-      await supabase.from('invoice_items').insert(itemsToInsert);
-    }
+      },
+      itemsToInsert,
+      supabase,
+    );
 
     revalidatePath('/dashboard');
 
@@ -674,49 +545,26 @@ export async function createOrTogglePublicLinkAction(
       return err('UNAUTHENTICATED', 'You must be signed in.');
     }
 
-    const planState = await resolvePlanState(supabase, user.id);
+    const planState = await InvoiceService.getUserPlanState(user.id, supabase);
     if (!canUseProFeature(planState)) {
       return err('PRO_REQUIRED', 'Public link sharing is a Pro feature.');
     }
 
-    const { data: invoice, error: fetchError } = await supabase
-      .from('invoices')
-      .select('id, status, public_token')
-      .eq('id', invoiceId)
-      .eq('user_id', user.id)
-      .single();
+    const invoice = await InvoiceService.getInvoiceById(invoiceId, user.id, supabase);
 
-    if (fetchError || !invoice) {
+    if (!invoice) {
       return err('NOT_FOUND', 'Invoice not found.');
     }
 
     // If draft and enabling, issue invoice first (FR-8.1)
     if (invoice.status === 'draft' && enabled) {
-      await (
-        supabase.rpc as unknown as (
-          fn: string,
-          args: { p_invoice_id: string },
-        ) => Promise<{ data: string | null; error: unknown }>
-      )('issue_invoice', { p_invoice_id: invoiceId });
+      await InvoiceService.issueInvoice(invoiceId, supabase);
     }
 
     // Generate 24-character URL-safe cryptographic token if not yet present (SEC-PUB-1)
     const token = invoice.public_token || crypto.randomBytes(18).toString('base64url').slice(0, 24);
 
-    const { error: updateError } = await supabase
-      .from('invoices')
-      .update({
-        public_token: token,
-        public_link_enabled: enabled,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', invoiceId)
-      .eq('user_id', user.id);
-
-    if (updateError) {
-      console.error('Failed to update public link:', updateError);
-      return err('INTERNAL_ERROR', 'Failed to update public link. Please try again.');
-    }
+    await InvoiceService.updatePublicLink(invoiceId, user.id, token, enabled, supabase);
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://tagiva.com';
     const publicUrl = `${appUrl}/i/${token}`;
