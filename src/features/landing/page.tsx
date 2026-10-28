@@ -7,12 +7,22 @@ import { PricingCtaBanner } from './components/pricing-cta-banner';
 
 export function LandingPage() {
   return (
-    <div className="flex flex-col w-full">
-      <HeroSection />
-      <FeaturesGrid />
-      <SocialProofSection />
-      <HowItWorksSection />
-      <PricingCtaBanner />
+    <div className="flex flex-col w-full snap-y snap-mandatory scroll-smooth">
+      <div className="w-full snap-start snap-always scroll-mt-16">
+        <HeroSection />
+      </div>
+      <div className="w-full snap-start snap-always scroll-mt-16">
+        <FeaturesGrid />
+      </div>
+      <div className="w-full snap-start snap-always scroll-mt-16">
+        <SocialProofSection />
+      </div>
+      <div className="w-full snap-start snap-always scroll-mt-16">
+        <HowItWorksSection />
+      </div>
+      <div className="w-full snap-start snap-always scroll-mt-16">
+        <PricingCtaBanner />
+      </div>
     </div>
   );
 }

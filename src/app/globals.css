@@ -68,6 +68,13 @@
   }
 }
 
+/* Scroll-snap container binding for pages using snap-y */
+html:has(.snap-y) {
+  scroll-snap-type: y mandatory;
+  scroll-padding-top: 4rem;
+  scroll-behavior: smooth;
+}
+
 /* Visually hidden utility that reveals on focus for skip links */
 .visually-hidden:where(:not(:focus-within, :active)) {
   position: absolute !important;

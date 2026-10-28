@@ -30,13 +30,21 @@ import { PrivacyPage, TermsPage } from '@/features/legal';
 describe('Landing & Marketing Pages', () => {
   it('renders landing page with all redesigned hero, value propositions, social proof, workflow, and CTA sections', () => {
     const html = renderToString(<LandingPage />);
-    expect(html).toContain('Modern invoicing for Indonesian freelancers and small businesses.');
+    expect(html).toContain('Enterprise-grade invoicing, built for modern teams.');
     expect(html).toContain('Get Started for Free');
     expect(html).toContain('Why Freelancers &amp; Agencies Choose Tagiva');
     expect(html).toContain('Create &amp; Send in 3 Simple Steps');
     expect(html).toContain('Loved by Indonesia’s Independent Talent');
     expect(html).toContain('Rp 4.2M+');
     expect(html).toContain('Start invoicing with 3 free slots or upgrade to Pro');
+  });
+
+  it('renders landing page with scroll-snap container and snap-start sections', () => {
+    const html = renderToString(<LandingPage />);
+    expect(html).toContain('snap-y');
+    expect(html).toContain('snap-mandatory');
+    expect(html).toContain('snap-start');
+    expect(html).toContain('scroll-mt-16');
   });
 
   it('renders interactive teaser with default sample data and login CTA gate (D-24, D-31)', () => {
