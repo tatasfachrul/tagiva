@@ -1,104 +1,104 @@
 'use client';
 
 /**
- * Tagiva - Pricing Table Component (D-11, D-12, D-16, D-21, D-22, D-29, D-39, D-48)
+ * Tagiva - Pricing Cards Component (Stitch Redesign)
  *
- * Strictly grounded in PRD.md Section 4.1 & 4.2 and src/lib/billing/plans.ts:
- * - Free Plan: 3 saved invoices in total (D-12), custom prefix (D-39), PDF download with platform footer.
- *   Public shareable links (/i/[token]), email delivery, and custom logo upload are Pro-only (D-11).
- * - Pro Plan: 1m (Rp29.000), 3m (Rp79.000), 6m (Rp150.000), 12m (Rp250.000) in manual or auto_renew modes.
+ * Implements high-contrast side-by-side pricing cards with interactive billing
+ * duration toggle and benefits-driven copy for Indonesian freelancers & agencies.
  */
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Check, X, Sparkles } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
+import { Check, CheckCircle2, Lock, Sparkles, Zap } from 'lucide-react';
 import { CANONICAL_PRICING_IDR, type PlanDurationMonths } from '@/lib/billing/plans';
 
-const DURATIONS: Array<{
+interface BillingPeriod {
   months: PlanDurationMonths;
+  key: 'monthly' | 'quarterly' | 'semiannual' | 'annual';
   label: string;
-  labelEn: string;
-  monthlyEquivalent: number;
+  monthlyRate: string;
+  billedText: string;
   discountBadge?: string;
-}> = [
-  { months: 1, label: '1 Bulan', labelEn: '1 Month', monthlyEquivalent: 29000 },
+  badgeStyle?: string;
+  discountText: string;
+}
+
+const BILLING_PERIODS: BillingPeriod[] = [
+  {
+    months: 1,
+    key: 'monthly',
+    label: 'Monthly',
+    monthlyRate: 'Rp 29.000',
+    billedText: 'Billed monthly at Rp 29.000 (Standard)',
+    discountText: 'Standard Rate',
+  },
   {
     months: 3,
-    label: '3 Bulan',
-    labelEn: '3 Months',
-    monthlyEquivalent: 26333,
-    discountBadge: 'Hemat 9%',
+    key: 'quarterly',
+    label: '3 Months',
+    monthlyRate: 'Rp 26.300',
+    billedText: `Billed quarterly at Rp ${CANONICAL_PRICING_IDR[3].toLocaleString('id-ID')} (Save 9%)`,
+    discountBadge: 'Save 9%',
+    badgeStyle: 'bg-[#ffffff] text-[#004ac6]',
+    discountText: '9% Discount Applied',
   },
   {
     months: 6,
-    label: '6 Bulan',
-    labelEn: '6 Months',
-    monthlyEquivalent: 25000,
-    discountBadge: 'Hemat 14%',
+    key: 'semiannual',
+    label: '6 Months',
+    monthlyRate: 'Rp 25.000',
+    billedText: `Billed semi-annually at Rp ${CANONICAL_PRICING_IDR[6].toLocaleString('id-ID')} (Save 14%)`,
+    discountBadge: 'Save 14% • Popular',
+    badgeStyle: 'bg-[#2563eb] text-white font-bold',
+    discountText: '14% Discount Applied',
   },
   {
     months: 12,
-    label: '12 Bulan',
-    labelEn: '12 Months',
-    monthlyEquivalent: 20833,
-    discountBadge: 'Hemat 28%',
+    key: 'annual',
+    label: '12 Months',
+    monthlyRate: 'Rp 20.800',
+    billedText: `Billed annually at Rp ${CANONICAL_PRICING_IDR[12].toLocaleString('id-ID')} (Save 28%)`,
+    discountBadge: 'Save 28%',
+    badgeStyle: 'bg-[#acf774] text-[#0b2000] font-bold',
+    discountText: '28% Discount Applied',
   },
 ];
 
-const DEFAULT_DURATION = DURATIONS[3]!;
-
 export function PricingTable() {
-  const [selectedDuration, setSelectedDuration] = useState<PlanDurationMonths>(12);
-
-  const activeDurationObj =
-    DURATIONS.find((d) => d.months === selectedDuration) ?? DEFAULT_DURATION;
-  const proPriceTotal = CANONICAL_PRICING_IDR[selectedDuration];
+  const [selectedPeriod, setSelectedPeriod] = useState<BillingPeriod>(BILLING_PERIODS[2]!);
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 py-8">
-      {/* Duration Selector Tabs */}
-      <div className="flex flex-col items-center gap-3 mb-10">
-        <span className="text-xs font-semibold text-muted-foreground">
-          Pilih Durasi Langganan Pro (D-16)
-        </span>
+    <div className="w-full">
+      {/* Billing Cycle Selector (Interactive Pills) */}
+      <div className="flex justify-center mb-10 px-4">
         <div
-          role="group"
-          aria-label="Pro subscription duration"
-          className="inline-flex flex-wrap items-center justify-center p-1.5 bg-muted rounded-xl border border-border shadow-2xs gap-1"
+          role="tablist"
+          aria-label="Billing frequency"
+          className="inline-flex p-1.5 rounded-2xl bg-[#dce9ff]/60 border border-[#c3c6d7]/30 shadow-inner gap-1 flex-wrap justify-center items-center"
         >
-          {DURATIONS.map((dur) => {
-            const isActive = selectedDuration === dur.months;
-            const totalForDur = CANONICAL_PRICING_IDR[dur.months];
+          {BILLING_PERIODS.map((period) => {
+            const isActive = selectedPeriod.key === period.key;
             return (
               <button
-                key={dur.months}
+                key={period.key}
                 type="button"
-                aria-pressed={isActive}
-                onClick={() => setSelectedDuration(dur.months)}
-                className={cn(
-                  'relative px-3.5 py-2 text-xs sm:text-sm font-medium rounded-lg transition-all duration-150 flex items-center gap-1.5',
+                role="tab"
+                aria-selected={isActive}
+                onClick={() => setSelectedPeriod(period)}
+                className={`px-4 py-2 rounded-xl text-xs sm:text-sm transition-all flex items-center gap-1.5 ${
                   isActive
-                    ? 'bg-background text-foreground shadow-xs font-semibold'
-                    : 'text-muted-foreground hover:text-foreground',
-                )}
+                    ? 'bg-white text-[#004ac6] shadow-sm font-semibold'
+                    : 'text-[#434655] hover:text-[#0b1c30]'
+                }`}
               >
-                <span>{dur.label}</span>
-                <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
-                  (Rp{totalForDur.toLocaleString('id-ID')})
-                </span>
-                {dur.discountBadge && (
+                <span>{period.label}</span>
+                {period.discountBadge && (
                   <span
-                    className={cn(
-                      'px-1.5 py-0.5 text-[10px] rounded-full font-bold',
-                      isActive
-                        ? 'bg-primary-subtle text-primary-text'
-                        : 'bg-muted-foreground/15 text-muted-foreground',
-                    )}
+                    className={`text-[11px] px-2 py-0.5 rounded-full ${
+                      isActive ? period.badgeStyle : 'bg-white/80 text-[#004ac6]'
+                    }`}
                   >
-                    {dur.discountBadge}
+                    {period.discountBadge}
                   </span>
                 )}
               </button>
@@ -107,234 +107,218 @@ export function PricingTable() {
         </div>
       </div>
 
-      {/* Pricing Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto items-stretch">
-        {/* Free Plan */}
-        <div className="flex flex-col justify-between rounded-2xl border border-border bg-card p-6 sm:p-8 shadow-xs">
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-foreground">Free Starter</h2>
-              <Badge variant="outline" className="text-xs font-medium">
-                Gratis Selamanya
-              </Badge>
-            </div>
-            <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
-              Cocok untuk freelancer yang baru memulai. Buat dan unduh invoice A4 berstandar tinggi tanpa biaya langganan.
-            </p>
+      {/* Pricing Cards Showcase */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+          {/* CARD 1: STARTER (Free Forever) */}
+          <div className="lg:col-span-5 flex flex-col justify-between p-6 sm:p-8 rounded-2xl bg-white border border-[#e5eeff] shadow-sm hover:shadow-md transition-shadow">
+            <div>
+              {/* Header Badges */}
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-xl sm:text-2xl font-bold text-[#0b1c30]">Starter</span>
+                <span className="text-xs px-3 py-1 rounded-full bg-[#eff4ff] text-[#434655] font-medium border border-[#dce9ff]">
+                  Free Forever
+                </span>
+              </div>
+              <p className="text-sm text-[#434655] mb-6 leading-relaxed">
+                Essential, spotless invoicing built for independent solo professionals getting up and
+                running.
+              </p>
 
-            <div className="mb-6 pb-6 border-b border-border">
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-4xl font-extrabold tracking-tight text-foreground font-mono tabular-nums">
+              {/* Price Tag */}
+              <div className="flex items-baseline gap-1.5 mb-6">
+                <span className="text-4xl sm:text-5xl font-extrabold text-[#0b1c30] tracking-tight">
                   Rp 0
                 </span>
-                <span className="text-sm text-muted-foreground">/ selamanya</span>
+                <span className="text-sm text-[#434655]">/ forever</span>
               </div>
-              <p className="text-xs text-muted-foreground mt-1.5 font-mono">
-                Maksimal 3 invoice tersimpan aktif (bukan per bulan)
-              </p>
-            </div>
 
-            <ul className="flex flex-col gap-3 text-sm text-foreground">
-              <li className="flex items-start gap-2.5">
-                <Check className="size-4 text-tagiva-green shrink-0 mt-0.5" aria-hidden="true" />
-                <span>Maksimal 3 invoice tersimpan secara total (D-12)</span>
-              </li>
-              <li className="flex items-start gap-2.5">
-                <Check className="size-4 text-tagiva-green shrink-0 mt-0.5" aria-hidden="true" />
-                <span>Menghapus invoice Draft mengembalikan 1 slot kuota (D-21)</span>
-              </li>
-              <li className="flex items-start gap-2.5">
-                <Check className="size-4 text-tagiva-green shrink-0 mt-0.5" aria-hidden="true" />
-                <span>
-                  Kustomisasi prefix nomor urut <code className="font-mono text-xs">INV-[PREFIX]-YYYY-MM-XXXX</code> (D-39)
-                </span>
-              </li>
-              <li className="flex items-start gap-2.5">
-                <Check className="size-4 text-tagiva-green shrink-0 mt-0.5" aria-hidden="true" />
-                <span>Template A4 Modern Minimalist & tipografi Inter tabular-nums (D-41)</span>
-              </li>
-              <li className="flex items-start gap-2.5">
-                <Check className="size-4 text-tagiva-green shrink-0 mt-0.5" aria-hidden="true" />
-                <span>8 mata uang (IDR, USD, SGD, EUR, AUD, GBP, MYR, JPY) & tombol PPN 11%</span>
-              </li>
-              <li className="flex items-start gap-2.5">
-                <Check className="size-4 text-tagiva-green shrink-0 mt-0.5" aria-hidden="true" />
-                <span>Unduh PDF A4 dengan footer atribusi &ldquo;Made with Tagiva • tagiva.com&rdquo;</span>
-              </li>
-              <li className="flex items-start gap-2.5 text-muted-foreground">
-                <X className="size-4 shrink-0 mt-0.5" aria-hidden="true" />
-                <span>Invoice Sent, Overdue, dan Paid tidak dapat dihapus pada paket Free (D-29)</span>
-              </li>
-              <li className="flex items-start gap-2.5 text-muted-foreground">
-                <X className="size-4 shrink-0 mt-0.5" aria-hidden="true" />
-                <span>Upload logo bisnis kustom (Eksklusif Pro, D-04)</span>
-              </li>
-              <li className="flex items-start gap-2.5 text-muted-foreground">
-                <X className="size-4 shrink-0 mt-0.5" aria-hidden="true" />
-                <span>Link publik klien (/i/[token]) & kirim email langsung dari aplikasi (D-11)</span>
-              </li>
-            </ul>
-          </div>
+              {/* CTA Button */}
+              <Link
+                href="/login?next=/invoices/new"
+                className="w-full py-3 px-4 rounded-xl text-sm text-center block bg-[#eff4ff] hover:bg-[#dce9ff] text-[#0b1c30] font-semibold border border-[#dce9ff] transition-colors mb-6 shadow-none"
+              >
+                Get Started Free
+              </Link>
 
-          <div className="pt-8">
-            <Button asChild variant="outline" className="w-full text-sm font-semibold h-11">
-              <Link href="/login?next=/invoices/new">Mulai Gratis dengan Google</Link>
-            </Button>
-          </div>
-        </div>
-
-        {/* Pro Plan */}
-        <div className="relative flex flex-col justify-between rounded-2xl border-2 border-primary bg-card p-6 sm:p-8 shadow-sm">
-          <div className="absolute -top-3 right-6">
-            <Badge variant="pro" className="px-3 py-1 font-semibold shadow-2xs">
-              <Sparkles className="size-3.5" aria-hidden="true" />
-              <span>PRO ({activeDurationObj.labelEn})</span>
-            </Badge>
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-foreground">Tagiva Pro</h2>
-              <Badge variant="sent" className="text-xs font-semibold">
-                {activeDurationObj.label}
-              </Badge>
-            </div>
-            <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
-              Untuk profesional, konsultan, dan studio kreatif yang menuntut branding penuh tanpa batas kuota.
-            </p>
-
-            <div className="mb-6 pb-6 border-b border-border">
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-4xl font-extrabold tracking-tight text-foreground font-mono tabular-nums">
-                  Rp {activeDurationObj.monthlyEquivalent.toLocaleString('id-ID')}
-                </span>
-                <span className="text-sm text-muted-foreground">/ bulan (efektif)</span>
+              {/* Features Included */}
+              <div className="text-xs uppercase tracking-wider text-[#434655] font-semibold mb-3">
+                What&apos;s included:
               </div>
-              <p className="text-xs text-muted-foreground mt-1.5 font-mono tabular-nums">
-                Total tagihan: <strong>Rp {proPriceTotal.toLocaleString('id-ID')}</strong> untuk{' '}
-                {activeDurationObj.label} (Manual atau Auto-Renew, D-22)
-              </p>
+              <ul className="space-y-3.5 text-sm text-[#0b1c30]">
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="size-5 text-[#004ac6] shrink-0 mt-0.5" />
+                  <span>
+                    <strong>Up to 3 active stored invoices</strong> in your cloud dashboard
+                  </span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="size-5 text-[#004ac6] shrink-0 mt-0.5" />
+                  <span>
+                    <strong>Clean A4 minimalist invoice layout</strong> designed for pristine
+                    readability
+                  </span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="size-5 text-[#004ac6] shrink-0 mt-0.5" />
+                  <span>
+                    <strong>Multi-currency invoicing</strong> (IDR, USD, SGD, EUR, AUD, GBP, MYR)
+                  </span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="size-5 text-[#004ac6] shrink-0 mt-0.5" />
+                  <span>
+                    <strong>Automated VAT &amp; tax calculation</strong> with one-click toggles
+                  </span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="size-5 text-[#004ac6] shrink-0 mt-0.5" />
+                  <span>
+                    <strong>Direct print &amp; PDF download</strong> (includes discreet Tagiva
+                    signature)
+                  </span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="size-5 text-[#004ac6] shrink-0 mt-0.5" />
+                  <span>
+                    <strong>Indonesian banking account details</strong> (BCA, Mandiri, BNI, BRI,
+                    etc.)
+                  </span>
+                </li>
+              </ul>
             </div>
 
-            <ul className="flex flex-col gap-3 text-sm text-foreground">
-              <li className="flex items-start gap-2.5 font-medium">
-                <Check className="size-4 text-primary shrink-0 mt-0.5" aria-hidden="true" />
-                <span>
-                  <strong>Invoice tanpa batas</strong> (tidak dibatasi 3 invoice)
-                </span>
-              </li>
-              <li className="flex items-start gap-2.5">
-                <Check className="size-4 text-primary shrink-0 mt-0.5" aria-hidden="true" />
-                <span>
-                  <strong>Tanpa watermark</strong> atribusi Tagiva pada PDF & halaman publik
-                </span>
-              </li>
-              <li className="flex items-start gap-2.5">
-                <Check className="size-4 text-primary shrink-0 mt-0.5" aria-hidden="true" />
-                <span>
-                  Upload logo bisnis Anda sendiri (PNG/JPG/WEBP ≤ 2 MB, tervalidasi magic-byte)
-                </span>
-              </li>
-              <li className="flex items-start gap-2.5">
-                <Check className="size-4 text-primary shrink-0 mt-0.5" aria-hidden="true" />
-                <span>
-                  Buat link publik dapat dibagikan (<code className="font-mono text-xs">/i/[token]</code>) dengan tombol salin rekening 1-klik
-                </span>
-              </li>
-              <li className="flex items-start gap-2.5">
-                <Check className="size-4 text-primary shrink-0 mt-0.5" aria-hidden="true" />
-                <span>
-                  Kirim invoice langsung via email in-app (<code className="font-mono text-xs">[Business Name] via Tagiva</code> + lampiran PDF, maks 50/hari)
-                </span>
-              </li>
-              <li className="flex items-start gap-2.5">
-                <Check className="size-4 text-primary shrink-0 mt-0.5" aria-hidden="true" />
-                <span>
-                  Kustomisasi prefix nomor invoice (<code className="font-mono text-xs">INV-STUDIO-2026-10-0001</code>)
-                </span>
-              </li>
-              <li className="flex items-start gap-2.5">
-                <Check className="size-4 text-primary shrink-0 mt-0.5" aria-hidden="true" />
-                <span>Hapus invoice lama kapan saja (Draft, Sent, Overdue, maupun Paid)</span>
-              </li>
-              <li className="flex items-start gap-2.5">
-                <Check className="size-4 text-primary shrink-0 mt-0.5" aria-hidden="true" />
-                <span>
-                  Pengingat masa aktif otomatis (30d, 14d, 3d, 0d untuk pembayaran manual; H-3 untuk auto-renew, D-53)
-                </span>
-              </li>
-            </ul>
+            {/* Bottom Note */}
+            <div className="pt-4 mt-8 bg-[#eff4ff] -mx-6 -mb-6 sm:-mx-8 sm:-mb-8 p-4 rounded-b-2xl flex items-center justify-between text-xs sm:text-sm text-[#434655] border-t border-[#e5eeff]">
+              <span>No credit card required</span>
+              <span className="flex items-center gap-1 font-semibold text-[#004ac6]">
+                <Zap className="size-3.5" /> Instant setup
+              </span>
+            </div>
           </div>
 
-          <div className="pt-8">
-            <Button asChild className="w-full text-sm font-semibold h-11 shadow-xs">
-              <Link href="/login?next=/settings/billing">Upgrade ke Pro Sekarang</Link>
-            </Button>
-            <p className="text-center text-[11px] text-muted-foreground mt-2.5">
-              Pembayaran via Payment Gateway Indonesia (Xendit / Midtrans / Mayar): QRIS, Virtual Account, & Kartu.
-            </p>
-          </div>
-        </div>
-      </div>
+          {/* CARD 2: PRO (High Contrast Selected / Deep Indigo-Blue Gradient) */}
+          <div className="lg:col-span-7 flex flex-col justify-between p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-[#2563eb] via-[#004ac6] to-[#0b1c30] text-white shadow-xl relative overflow-hidden">
+            {/* Background Radial Glow Effects */}
+            <div className="absolute -right-20 -bottom-20 w-80 h-80 bg-blue-300/15 rounded-full blur-2xl pointer-events-none" />
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none" />
 
-      {/* All 4 Canonical Durations Reference Table (D-16) */}
-      <div className="mt-12 max-w-4xl mx-auto rounded-xl border border-border bg-white overflow-hidden">
-        <div className="px-5 py-3.5 bg-muted/60 border-b border-border flex items-center justify-between">
-          <span className="text-xs font-bold text-foreground">
-            Tabel Perbandingan Durasi Paket Pro (D-16)
-          </span>
-          <span className="font-mono text-[11px] text-muted-foreground">
-            Semua durasi membuka fitur Pro yang sama
-          </span>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <caption className="visually-hidden">
-              Perbandingan harga paket Pro 1, 3, 6, dan 12 bulan
-            </caption>
-            <thead className="border-b border-border text-muted-foreground bg-muted/20">
-              <tr>
-                <th scope="col" className="py-2.5 px-4 font-semibold">
-                  Paket Durasi
-                </th>
-                <th scope="col" className="py-2.5 px-4 font-semibold text-right">
-                  Total Harga
-                </th>
-                <th scope="col" className="py-2.5 px-4 font-semibold text-right">
-                  Efektif per Bulan
-                </th>
-                <th scope="col" className="py-2.5 px-4 font-semibold text-right">
-                  Hemat vs Bulanan
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border font-mono tabular-nums">
-              <tr>
-                <td className="py-2.5 px-4 font-sans font-medium text-foreground">Pro 1 Bulan</td>
-                <td className="py-2.5 px-4 text-right font-semibold text-foreground">Rp29.000</td>
-                <td className="py-2.5 px-4 text-right text-muted-foreground">Rp29.000</td>
-                <td className="py-2.5 px-4 text-right text-muted-foreground">—</td>
-              </tr>
-              <tr>
-                <td className="py-2.5 px-4 font-sans font-medium text-foreground">Pro 3 Bulan</td>
-                <td className="py-2.5 px-4 text-right font-semibold text-foreground">Rp79.000</td>
-                <td className="py-2.5 px-4 text-right text-muted-foreground">≈ Rp26.300</td>
-                <td className="py-2.5 px-4 text-right text-status-paid-text font-semibold">≈ 9%</td>
-              </tr>
-              <tr>
-                <td className="py-2.5 px-4 font-sans font-medium text-foreground">Pro 6 Bulan</td>
-                <td className="py-2.5 px-4 text-right font-semibold text-foreground">Rp150.000</td>
-                <td className="py-2.5 px-4 text-right text-muted-foreground">Rp25.000</td>
-                <td className="py-2.5 px-4 text-right text-status-paid-text font-semibold">≈ 14%</td>
-              </tr>
-              <tr className="bg-primary-subtle/30">
-                <td className="py-2.5 px-4 font-sans font-bold text-primary-text">Pro 12 Bulan</td>
-                <td className="py-2.5 px-4 text-right font-bold text-primary-text">Rp250.000</td>
-                <td className="py-2.5 px-4 text-right font-semibold text-primary-text">≈ Rp20.800</td>
-                <td className="py-2.5 px-4 text-right text-status-paid-text font-bold">≈ 28%</td>
-              </tr>
-            </tbody>
-          </table>
+            <div className="relative z-10">
+              {/* Header Badges */}
+              <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl sm:text-3xl font-bold text-white">Pro</span>
+                  <span className="px-2.5 py-0.5 rounded-full bg-[#acf774] text-[#0b2000] text-xs font-bold shadow-sm">
+                    RECOMMENDED
+                  </span>
+                </div>
+                <span className="text-xs px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-white border border-white/20">
+                  Everything in Starter + Premium
+                </span>
+              </div>
+
+              <p className="text-sm text-blue-100 mb-6 max-w-lg leading-relaxed">
+                For freelancers, studios, and consultants who need branded invoices, automated
+                reminders, and instant link payments.
+              </p>
+
+              {/* Dynamic Price Block */}
+              <div className="p-4 sm:p-5 rounded-xl bg-white/10 backdrop-blur-md mb-6 flex flex-col md:flex-row md:items-baseline justify-between gap-3 border border-white/15">
+                <div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+                      {selectedPeriod.monthlyRate}
+                    </span>
+                    <span className="text-sm text-blue-200">/ month</span>
+                  </div>
+                  <div className="text-xs text-blue-100 mt-1">{selectedPeriod.billedText}</div>
+                </div>
+
+                <div className="text-left md:text-right flex items-center md:flex-col justify-between md:items-end gap-1">
+                  <span className="text-xs text-[#acf774] font-bold flex items-center gap-1">
+                    <Sparkles className="size-3.5" />
+                    <span>{selectedPeriod.discountText}</span>
+                  </span>
+                  <span className="text-xs text-blue-100 opacity-90">
+                    QRIS &amp; Virtual Account supported
+                  </span>
+                </div>
+              </div>
+
+              {/* Prominent High-Contrast CTA */}
+              <Link
+                href="/login?next=/settings/billing"
+                className="w-full py-3.5 px-6 rounded-xl text-sm text-center block bg-white hover:bg-slate-50 text-[#004ac6] font-bold shadow-lg transition-transform active:scale-[0.99] mb-6"
+              >
+                Upgrade to Pro Now — 14-Day Guarantee
+              </Link>
+
+              {/* Features Grid */}
+              <div className="text-xs uppercase tracking-wider text-blue-200 font-bold mb-3">
+                Everything in Starter, plus:
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3 text-sm text-white">
+                <div className="flex items-start gap-2.5">
+                  <Check className="size-5 text-[#acf774] shrink-0 mt-0.5" />
+                  <span>
+                    <strong>Unlimited active invoices</strong> with permanent archive storage
+                  </span>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <Check className="size-5 text-[#acf774] shrink-0 mt-0.5" />
+                  <span>
+                    <strong>100% Watermark-free</strong> — completely remove Tagiva branding
+                  </span>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <Check className="size-5 text-[#acf774] shrink-0 mt-0.5" />
+                  <span>
+                    <strong>Upload your custom studio logo</strong> and personalized brand styling
+                  </span>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <Check className="size-5 text-[#acf774] shrink-0 mt-0.5" />
+                  <span>
+                    <strong>Shareable client portal links</strong> with one-tap bank copy buttons
+                  </span>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <Check className="size-5 text-[#acf774] shrink-0 mt-0.5" />
+                  <span>
+                    <strong>In-app email delivery</strong> sending professional PDF attachments
+                  </span>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <Check className="size-5 text-[#acf774] shrink-0 mt-0.5" />
+                  <span>
+                    <strong>Custom invoice numbering</strong> &amp; custom series prefixes
+                  </span>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <Check className="size-5 text-[#acf774] shrink-0 mt-0.5" />
+                  <span>
+                    <strong>Automated gentle payment reminders</strong> (30d, 14d, 3d, &amp; due
+                    date)
+                  </span>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <Check className="size-5 text-[#acf774] shrink-0 mt-0.5" />
+                  <span>
+                    <strong>Complete data control</strong> with one-click export or permanent purge
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Bar */}
+            <div className="relative z-10 pt-4 mt-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-blue-200 bg-white/10 -mx-6 -mb-6 sm:-mx-8 sm:-mb-8 p-4 rounded-b-2xl border-t border-white/10">
+              <span className="flex items-center gap-1.5">
+                <Lock className="size-3.5 text-blue-200" /> Pay securely via QRIS, BCA VA, Mandiri,
+                or Card
+              </span>
+              <span className="font-semibold text-white">Cancel anytime hassle-free</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>

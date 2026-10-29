@@ -58,22 +58,25 @@ describe('Landing & Marketing Pages', () => {
   it('renders pricing table with canonical pricing tiers (D-16)', () => {
     const html = renderToString(<PricingTable />);
     // Free plan
-    expect(html).toContain('Free Starter');
+    expect(html).toContain('Starter');
+    expect(html).toContain('Free Forever');
     expect(html).toContain('Rp 0');
-    expect(html).toContain('Maksimal 3 invoice tersimpan');
+    expect(html).toContain('Up to 3 active stored invoices');
 
     // Pro plan
-    expect(html).toContain('Tagiva Pro');
-    expect(html).toContain('Invoice tanpa batas');
-    expect(html).toContain('Tanpa watermark');
-    expect(html).toContain('Upload logo bisnis');
+    expect(html).toContain('Pro');
+    expect(html).toContain('RECOMMENDED');
+    expect(html).toContain('Unlimited active invoices');
+    expect(html).toContain('100% Watermark-free');
+    expect(html).toContain('Upload your custom studio logo');
   });
 
   it('renders full pricing page with FAQ and guarantee banner', () => {
     const html = renderToString(<PricingPage />);
-    expect(html).toContain('Harga Sederhana, Transparan &amp; Terjangkau');
-    expect(html).toContain('Pertanyaan Umum Seputar Biaya &amp; Langganan');
-    expect(html).toContain('Keamanan Data &amp; Privasi Terjamin');
+    expect(html).toContain('Fair pricing for ambitious freelancers');
+    expect(html).toContain('Frequently Asked Questions');
+    expect(html).toContain('Bank-Grade Privacy');
+    expect(html).toContain('Ready to impress your clients?');
   });
 
   it('renders privacy policy with explicit UU PDP No. 27/2022 and 72-hour SLA (D-58)', () => {

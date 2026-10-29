@@ -12,6 +12,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { sendInvoiceEmailAction } from '../email-actions';
 import { renderInvoiceEmailHtml } from '@/lib/email/templates/invoice-email';
+import { getTodayWibString } from '@/lib/domain/timezone';
 
 // Mock Next.js cache revalidation
 vi.mock('next/cache', () => ({
@@ -269,7 +270,7 @@ describe('Invoice Email Delivery Action (sendInvoiceEmailAction — FR-9, D-11, 
         id: `log-${i}`,
         user_id: '00000000-0000-4000-8000-000000000001',
         invoice_id: `other-inv-${i}`,
-        sent_date_wib: '2026-10-28',
+        sent_date_wib: getTodayWibString(),
         recipient_email: `client${i}@example.com`,
       });
     }
@@ -297,7 +298,7 @@ describe('Invoice Email Delivery Action (sendInvoiceEmailAction — FR-9, D-11, 
         id: `log-inv-${i}`,
         user_id: '00000000-0000-4000-8000-000000000001',
         invoice_id: TEST_INVOICE_ID,
-        sent_date_wib: '2026-10-28',
+        sent_date_wib: getTodayWibString(),
         recipient_email: `client${i}@example.com`,
       });
     }

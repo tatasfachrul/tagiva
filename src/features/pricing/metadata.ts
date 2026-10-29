@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const pricingMetadata: Metadata = {
-  title: 'Harga — Tagiva Invoicing',
+  title: 'Tagiva Pricing — Simple, Transparent & Affordable',
   description:
-    'Pilihan paket harga Tagiva: Gratis 3 invoice selamanya, atau Pro mulai dari Rp20.833/bulan untuk invoice tanpa batas dan logo kustom.',
+    'Fair pricing for ambitious freelancers and boutique agencies. Start free forever or upgrade to Pro for unlimited invoices, zero watermarks, and custom branding.',
 };

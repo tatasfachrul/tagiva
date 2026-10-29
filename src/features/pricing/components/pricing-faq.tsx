@@ -1,55 +1,84 @@
-import React from 'react';
+'use client';
 
-const PRICING_FAQS = [
+import React, { useState } from 'react';
+import { ChevronDown } from 'lucide-react';
+
+interface FaqItem {
+  q: string;
+  a: string;
+}
+
+const PRICING_FAQS: FaqItem[] = [
   {
-    q: 'Metode pembayaran apa saja yang didukung?',
-    a: 'Tagiva terintegrasi dengan Payment Gateway berizin di Indonesia yang mendukung pembayaran instan via QRIS (GoPay, OVO, Dana, ShopeePay, LinkAja, BCA Mobile), Virtual Account (BCA, Mandiri, BNI, BRI, Permata), dan Kartu Kredit.',
+    q: 'Which Indonesian payment methods are accepted?',
+    a: 'We accept all major Indonesian payment options through trusted national gateways: instant QRIS (GoPay, OVO, Dana, ShopeePay), major bank Virtual Accounts (BCA, Mandiri, BRI, BNI, Permata), and Visa/Mastercard credit or debit cards. Your account updates automatically the second payment clears.',
   },
   {
-    q: 'Apakah paket Free Starter benar-benar gratis?',
-    a: 'Ya, 100% gratis selamanya. Anda dapat membuat dan menyimpan hingga 3 invoice aktif. Jika Anda menghapus invoice berstatus Draft, slot kuota invoice Anda akan kembali.',
+    q: 'What happens if my Pro subscription expires?',
+    a: 'Your invoices and client records are never deleted without your permission. If your Pro membership ends, your account smoothly converts back to the Starter tier. You can still access and download your past invoices at any time.',
   },
   {
-    q: 'Apa yang terjadi jika langganan Pro saya berakhir (Lapsed)?',
-    a: 'Semua invoice dan data Anda tetap aman dan tidak akan dihapus. Invoice yang telah terbit tetap dapat diakses via link publik atau diunduh sebagai PDF. Jika ada invoice berstatus Terkirim atau Lewat Jatuh Tempo yang baru dibayar oleh klien, Anda tetap dapat menandainya sebagai Lunas. Anda tidak dapat membuat invoice baru jika sudah melampaui batas 3 invoice, kecuali Anda memperpanjang Pro kembali.',
+    q: 'Can I remove the “Generated with Tagiva” footer?',
+    a: 'Yes! With the Pro plan, all watermarks and Tagiva signatures are completely removed. You can also upload your own company or studio logo and customize your invoice numbering prefix for a 100% white-label impression.',
   },
   {
-    q: 'Apakah Tagiva mendukung perpanjangan otomatis (auto-renewal)?',
-    a: 'Ya, saat checkout Anda dapat memilih opsi Perpanjangan Otomatis atau Bayar Manual Sekali Bayar. Jika opsi perpanjangan otomatis gagal saat ditagih, kami memberikan masa tenggang (grace period) selama 3 hari agar layanan Anda tidak langsung terhenti.',
+    q: 'Do I receive official receipts for tax accounting?',
+    a: 'Yes. An official payment receipt is generated instantly upon every successful transaction and emailed directly to your registered inbox, complete with VAT breakdown for your studio’s expense documentation.',
   },
   {
-    q: 'Bisakah saya mengunduh bukti pembayaran langganan Tagiva?',
-    a: 'Tentu saja. Setiap pembayaran langganan yang berhasil tercatat di menu Pengaturan Billing dengan riwayat transaksi dan invoice resmi langganan Anda.',
+    q: 'Can I bill international clients in foreign currencies?',
+    a: 'Both Starter and Pro allow you to generate invoices in USD, SGD, EUR, AUD, GBP, and MYR alongside IDR. You can also specify SWIFT/IBAN wire instructions directly on the invoice.',
   },
 ];
 
 export function PricingFaq() {
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
+
+  const toggleItem = (index: number) => {
+    setOpenIndex((prev) => (prev === index ? null : index));
+  };
+
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 py-16">
-      <div className="text-center mb-10">
-        <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-          Pertanyaan Umum Seputar Biaya & Langganan
+    <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+      <div className="text-center mb-8">
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0b1c30] mb-2">
+          Frequently Asked Questions
         </h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Semua yang perlu Anda ketahui tentang paket langganan dan garansi keamanan Tagiva.
+        <p className="text-sm sm:text-base text-[#434655]">
+          Clear, straightforward answers about billing and plans.
         </p>
       </div>
 
-      <div className="space-y-4">
-        {PRICING_FAQS.map((faq, index) => (
-          <details
-            key={index}
-            name="pricing-faq"
-            open={index === 0}
-            className="rounded-xl border border-border bg-card p-6 shadow-sm transition-colors hover:border-border/80"
-          >
-            <summary className="text-base font-semibold text-foreground cursor-pointer select-none">
-              {faq.q}
-            </summary>
-            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{faq.a}</p>
-          </details>
-        ))}
+      <div className="space-y-3">
+        {PRICING_FAQS.map((faq, index) => {
+          const isOpen = openIndex === index;
+          return (
+            <div
+              key={index}
+              className="rounded-xl bg-white border border-[#e5eeff] shadow-sm overflow-hidden transition-all"
+            >
+              <button
+                type="button"
+                onClick={() => toggleItem(index)}
+                aria-expanded={isOpen}
+                className="w-full p-4 sm:p-5 flex items-center justify-between text-left text-[#0b1c30] hover:text-[#004ac6] transition-colors"
+              >
+                <span className="text-sm sm:text-base font-semibold">{faq.q}</span>
+                <ChevronDown
+                  className={`size-5 text-[#434655] shrink-0 transition-transform duration-200 ${
+                    isOpen ? 'rotate-180 text-[#004ac6]' : ''
+                  }`}
+                />
+              </button>
+              {isOpen && (
+                <div className="px-4 sm:px-5 pb-5 pt-0 text-[#434655] text-sm leading-relaxed border-t border-[#f0f4ff]">
+                  <p className="mt-2.5">{faq.a}</p>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
-    </div>
+    </section>
   );
 }
